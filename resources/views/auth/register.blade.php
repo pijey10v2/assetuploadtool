@@ -66,6 +66,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     {{ __('Register') }}
                                 </button>
+                                <a href="/login">{{ __('Go to login') }}</a>
                             </div>
                         </div>
                     </form>

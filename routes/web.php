@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UploadToolController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -25,4 +27,14 @@ require __DIR__.'/auth.php';
 
 Auth::routes();
 
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+})->name('logout');
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/uploadtool', [UploadToolController::class, 'index'])->name('uploadtool');
+Route::post('/uploadtool', [UploadToolController::class, 'store'])->name('uploadtool.store');
+
+
