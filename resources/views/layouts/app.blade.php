@@ -87,5 +87,8 @@
             @yield('content')
         </main>
     </div>
+
+    <!-- This ensures the <script> inside @push('scripts') in your Blade is actually loaded. -->
+    @stack('scripts')
 </body>
 </html>
