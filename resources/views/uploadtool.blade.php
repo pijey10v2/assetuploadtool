@@ -58,79 +58,81 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
 <script>
-$(document).ready(function() {
+    const NODE_API_URL = "{{ config('app.node_api_url') }}";
 
-    $('#uploadForm').on('submit', function(e) {
-        e.preventDefault();
+    $(document).ready(function() {
 
-        var form = this;
+        $('#uploadForm').on('submit', function(e) {
+            e.preventDefault();
 
-        // Bootstrap validation
-        if (!form.checkValidity()) {
-            e.stopPropagation();
-            $(form).addClass('was-validated');
-            return false;
-        }
+            var form = this;
 
-        var formData = new FormData(form);
-
-        $.ajax({
-            url: 'http://localhost:3000/api/upload-bim', // Node.js API
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            beforeSend: function() {
-                // Show animated progress bar
-                $('#progress-container').show();
-                $('#progress-bar')
-                    .removeClass('bg-danger bg-success')
-                    .addClass('bg-info progress-bar-striped progress-bar-animated')
-                    .css('width', '100%')
-                    .text('Please wait data processing is in progress...');
-                $('#upload-status').html('');
-            },
-            success: function(response) {
-                $('#progress-bar')
-                    .removeClass('bg-info progress-bar-striped progress-bar-animated')
-                    .addClass('bg-success')
-                    .text('Completed');
-
-                $('#upload-status').html(`
-                    <div class="alert alert-success mt-3">
-                        ${response.message}<br>
-                        Inserted: <strong>${response.inserted}</strong>
-                    </div>
-                `);
-
-                form.reset();
-                $(form).removeClass('was-validated');
-
-                // Fade out progress after 3 seconds
-                setTimeout(() => {
-                    $('#progress-container').fadeOut(800);
-                    $('#upload-status').fadeOut(800, function() {
-                        $(this).html('').show(); // reset
-                    });
-                }, 10000);
-            },
-            error: function(xhr, status, error) {
-                let msg = xhr.responseJSON?.message || error;
-                $('#progress-bar')
-                    .removeClass('bg-info progress-bar-striped progress-bar-animated')
-                    .addClass('bg-danger')
-                    .text('Error');
-
-                $('#upload-status').html(`
-                    <div class="alert alert-danger mt-3">
-                        Upload failed: ${msg}
-                    </div>
-                `);
+            // Bootstrap validation
+            if (!form.checkValidity()) {
+                e.stopPropagation();
+                $(form).addClass('was-validated');
+                return false;
             }
-        });
-    });
 
-});
+            var formData = new FormData(form);
+
+            $.ajax({
+                url: `${NODE_API_URL}/upload-bim`, // Node.js API
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                beforeSend: function() {
+                    // Show animated progress bar
+                    $('#progress-container').show();
+                    $('#progress-bar')
+                        .removeClass('bg-danger bg-success')
+                        .addClass('bg-info progress-bar-striped progress-bar-animated')
+                        .css('width', '100%')
+                        .text('Please wait data processing is in progress...');
+                    $('#upload-status').html('');
+                },
+                success: function(response) {
+                    $('#progress-bar')
+                        .removeClass('bg-info progress-bar-striped progress-bar-animated')
+                        .addClass('bg-success')
+                        .text('Completed');
+
+                    $('#upload-status').html(`
+                        <div class="alert alert-success mt-3">
+                            ${response.message}<br>
+                            Inserted: <strong>${response.inserted}</strong>
+                        </div>
+                    `);
+
+                    form.reset();
+                    $(form).removeClass('was-validated');
+
+                    // Fade out progress after 3 seconds
+                    setTimeout(() => {
+                        $('#progress-container').fadeOut(800);
+                        $('#upload-status').fadeOut(800, function() {
+                            $(this).html('').show(); // reset
+                        });
+                    }, 10000);
+                },
+                error: function(xhr, status, error) {
+                    let msg = xhr.responseJSON?.message || error;
+                    $('#progress-bar')
+                        .removeClass('bg-info progress-bar-striped progress-bar-animated')
+                        .addClass('bg-danger')
+                        .text('Error');
+
+                    $('#upload-status').html(`
+                        <div class="alert alert-danger mt-3">
+                            Upload failed: ${msg}
+                        </div>
+                    `);
+                }
+            });
+        });
+
+    });
 
 </script>
 @endpush
