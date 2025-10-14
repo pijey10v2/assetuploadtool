@@ -89,7 +89,7 @@
                         .removeClass('bg-danger bg-success')
                         .addClass('bg-info progress-bar-striped progress-bar-animated')
                         .css('width', '100%')
-                        .text('Please wait data processing is in progress...');
+                        .text('Please wait while data processing is in progress...');
                     $('#upload-status').html('');
                 },
                 success: function(response) {
