@@ -69,15 +69,10 @@ $(document).ready(function() {
         if (!form.checkValidity()) {
             e.stopPropagation();
             $(form).addClass('was-validated');
-            return false; // stop AJAX if invalid
+            return false;
         }
 
         var formData = new FormData(form);
-
-        // Reset progress and status
-        $('#progress-container').show();
-        $('#progress-bar').removeClass('bg-danger').addClass('bg-success').css('width','0%').text('0%');
-        $('#upload-status').html('');
 
         $.ajax({
             url: 'http://localhost:3000/api/upload-bim', // Node.js API
@@ -85,39 +80,57 @@ $(document).ready(function() {
             data: formData,
             processData: false,
             contentType: false,
-            xhr: function() {
-                var xhr = new window.XMLHttpRequest();
-                xhr.upload.addEventListener('progress', function(e) {
-                    if (e.lengthComputable) {
-                        var percent = Math.round((e.loaded / e.total) * 100);
-                        $('#progress-bar').css('width', percent + '%').text(percent + '%');
-                    }
-                });
-                return xhr;
+            beforeSend: function() {
+                // Show animated progress bar
+                $('#progress-container').show();
+                $('#progress-bar')
+                    .removeClass('bg-danger bg-success')
+                    .addClass('bg-info progress-bar-striped progress-bar-animated')
+                    .css('width', '100%')
+                    .text('Please wait data processing is in progress...');
+                $('#upload-status').html('');
             },
             success: function(response) {
+                $('#progress-bar')
+                    .removeClass('bg-info progress-bar-striped progress-bar-animated')
+                    .addClass('bg-success')
+                    .text('Completed');
+
                 $('#upload-status').html(`
-                    <div class="alert alert-success">
-                         ${response.message}<br>
+                    <div class="alert alert-success mt-3">
+                        ${response.message}<br>
                         Inserted: <strong>${response.inserted}</strong>
                     </div>
                 `);
+
                 form.reset();
                 $(form).removeClass('was-validated');
-                $('#progress-bar').css('width','100%').text('100%');
+
+                // Fade out progress after 3 seconds
+                setTimeout(() => {
+                    $('#progress-container').fadeOut(800);
+                    $('#upload-status').fadeOut(800, function() {
+                        $(this).html('').show(); // reset
+                    });
+                }, 10000);
             },
             error: function(xhr, status, error) {
                 let msg = xhr.responseJSON?.message || error;
+                $('#progress-bar')
+                    .removeClass('bg-info progress-bar-striped progress-bar-animated')
+                    .addClass('bg-danger')
+                    .text('Error');
+
                 $('#upload-status').html(`
-                    <div class="alert alert-danger">
-                         Upload failed: ${msg}
+                    <div class="alert alert-danger mt-3">
+                        Upload failed: ${msg}
                     </div>
                 `);
-                $('#progress-bar').removeClass('bg-success').addClass('bg-danger').text('Error');
             }
         });
     });
 
 });
+
 </script>
 @endpush
