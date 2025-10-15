@@ -45,6 +45,19 @@
                 <div class="invalid-feedback">Please enter a data ID.</div>
             </div>
 
+            <div class="mb-3">
+                <label for="data_source" class="form-label">Mapping</label>
+                <select class="form-select" id="data_source" name="data_source">
+                    <option value="">Select Mapping Name</option>
+                    <option value="COR">COR - Pavement</option>
+                    <option value="GRL">GRL - Road Furniture</option>
+                    <option value="SGN">SGN - Road Furniture</option>
+                    <option value="JUT">JUT - Pavement</option>
+                    <option value="MED(KERB)">MED (KERB) - Road Furniture</option>
+                </select>
+                <div class="invalid-feedback">Please select a data source.</div>
+            </div>
+
             <!-- Submit Button -->
             <div class="d-grid">
                 <button type="submit" class="btn btn-primary">Upload</button>

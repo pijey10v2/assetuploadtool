@@ -11,13 +11,17 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected $primaryKey = 'user_id';
+
+    public $incrementing = true;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'user_id', 'name', 'email', 'password',
     ];
 
     /**
@@ -37,4 +41,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (empty($user->user_firstname) && !empty($user->name)) {
+                $user->user_firstname = $user->name;
+            }
+            if (empty($user->user_lastname) && !empty($user->name)) {
+                $user->user_lastname = '';
+            }
+            if (empty($user->user_email) && !empty($user->email)) {
+                $user->user_email = $user->email;
+            }
+            if (empty($user->user_country)) {
+                $user->user_country = '';
+            }
+            if (empty($user->user_password) && !empty($user->password)) {
+                $user->user_password = $user->password;
+            }
+        });
+    }
+
 }
