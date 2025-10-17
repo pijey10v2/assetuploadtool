@@ -195,7 +195,7 @@ $(document).ready(function() {
 
     // Execute Data Update Button Handler
     $('#executeBtn').on('click', function() {
-        alert('Executing data update... (add your backend logic here)');
+        alert('Executing data update...');
     });
 
     // Render Mapping Table
