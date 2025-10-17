@@ -56,9 +56,8 @@
 
                     <!-- Mapping Source -->
                     <div class="mb-3">
-                        <label for="asset_table_name" class="form-label">Mapping Type</label>
+                        <label for="asset_table_name" class="form-label">Asset Table</label>
                         <select class="form-select" id="asset_table_name" name="asset_table_name">
-                            <option value="">Select Mapping Type</option>
                             <option value="app_fd_inv_pavement">COR - Pavement</option>
                             <option value="GRL">GRL - Road Furniture</option>
                             <option value="SGN">SGN - Road Furniture</option>
