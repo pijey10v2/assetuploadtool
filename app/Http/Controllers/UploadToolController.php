@@ -68,10 +68,11 @@ class UploadToolController extends Controller
         }
 
         // Step 3: Call APIs
-        $amsUrl = 'https://ams.reveronconsulting.com/JavaBridge/asset/index.php';
+        $apiUrl = env('JOGET_API_URL');
+        //$apiUrl = 'https://ams.reveronconsulting.com/JavaBridge/asset/index.php';
 
         // Get database table columns
-        $dbResponse = Http::asForm()->post($amsUrl, [
+        $dbResponse = Http::asForm()->post($apiUrl, [
             'import_batch_no' => $request->import_batch_no,
             'data_id' => $request->data_id,
             'asset_table_name' => $request->asset_table_name,
@@ -79,7 +80,7 @@ class UploadToolController extends Controller
         ])->json();
 
         // Get excel columns (mapping)
-        $excelResponse = Http::asForm()->post($amsUrl, [
+        $excelResponse = Http::asForm()->post($apiUrl, [
             'import_batch_no' => $request->import_batch_no,
             'data_id' => $request->data_id,
             'asset_table_name' => $request->asset_table_name,

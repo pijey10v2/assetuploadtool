@@ -223,5 +223,24 @@ $(document).ready(function() {
         }
     }
 });
+
+async function loadAssetTables() {
+  const response = await fetch("http://localhost:8080/JavaBridge/asset/index.php?mode=get_all_tables");
+  const data = await response.json();
+
+  if (data.status === "success") {
+    const dropdown = document.getElementById("assetTableDropdown");
+    dropdown.innerHTML = "";
+    data.tables.forEach(table => {
+      const option = document.createElement("option");
+      option.value = table;
+      option.textContent = table;
+      dropdown.appendChild(option);
+    });
+  } else {
+    console.error("Error:", data.message);
+  }
+}
+
 </script>
 @endpush
