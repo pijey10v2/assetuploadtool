@@ -69,7 +69,6 @@ class UploadToolController extends Controller
 
         // Step 3: Call APIs
         $apiUrl = env('JOGET_API_URL');
-        //$apiUrl = 'https://ams.reveronconsulting.com/JavaBridge/asset/index.php';
 
         // Get database table columns
         $dbResponse = Http::asForm()->post($apiUrl, [

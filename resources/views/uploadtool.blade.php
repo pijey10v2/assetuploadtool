@@ -57,12 +57,8 @@
                     <!-- Mapping Source -->
                     <div class="mb-3">
                         <label for="asset_table_name" class="form-label">Asset Table</label>
-                        <select class="form-select" id="asset_table_name" name="asset_table_name">
-                            <option value="app_fd_inv_pavement">COR - Pavement</option>
-                            <option value="GRL">GRL - Road Furniture</option>
-                            <option value="SGN">SGN - Road Furniture</option>
-                            <option value="JUT">JUT - Pavement</option>
-                            <option value="MED(KERB)">MED (KERB) - Road Furniture</option>
+                         <select class="form-select" id="asset_table_name" name="asset_table_name" required>
+                            <option selected disabled><span class="spinner-border spinner-border-sm"></span> Loading...</option>
                         </select>
                         <div class="invalid-feedback">Please select a mapping type.</div>
                     </div>
@@ -223,24 +219,36 @@ $(document).ready(function() {
         }
     }
 });
-
-async function loadAssetTables() {
-  const response = await fetch("http://localhost:8080/JavaBridge/asset/index.php?mode=get_all_tables");
-  const data = await response.json();
-
-  if (data.status === "success") {
-    const dropdown = document.getElementById("assetTableDropdown");
-    dropdown.innerHTML = "";
-    data.tables.forEach(table => {
-      const option = document.createElement("option");
-      option.value = table;
-      option.textContent = table;
-      dropdown.appendChild(option);
-    });
-  } else {
-    console.error("Error:", data.message);
-  }
-}
-
 </script>
+
+<script>
+    const API_GET_ALL_TABLES_URL = "<?php echo $_ENV['API_GET_ALL_TABLES_URL']; ?>";
+    async function loadAssetTables() {
+      const dropdown = document.getElementById("asset_table_name");
+
+      try {
+        const response = await fetch(API_GET_ALL_TABLES_URL);
+        const data = await response.json();
+
+        if (data.status === "success" && Array.isArray(data.tables)) {
+          dropdown.innerHTML = '<option value="" selected disabled>Select a table</option>';
+          data.tables.forEach(table => {
+            const option = document.createElement("option");
+            option.value = table;
+            option.textContent = table;
+            dropdown.appendChild(option);
+          });
+        } else {
+          dropdown.innerHTML = '<option disabled>Error loading tables</option>';
+          console.error("Error:", data.message);
+        }
+      } catch (error) {
+        dropdown.innerHTML = '<option disabled>Failed to fetch tables</option>';
+        console.error("Fetch error:", error);
+      }
+    }
+
+    // Load tables when the page loads
+    document.addEventListener("DOMContentLoaded", loadAssetTables);
+  </script>
 @endpush
