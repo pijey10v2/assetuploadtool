@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use PDO;
 
+ini_set('memory_limit', '1024M'); // Increase memory
+set_time_limit(0); // Disable script timeout
+
 class UploadToolController extends Controller
 {
     public function index()
@@ -33,7 +36,7 @@ class UploadToolController extends Controller
         $bimFullPath = storage_path('app/' . $bimPath);
         $rawFullPath = storage_path('app/' . $rawPath);
 
-        // --- Step 1: Read SQLite BIM Columns ---
+        // Step 1: Read SQLite BIM Columns
         $pdo = new \PDO("sqlite:" . $bimFullPath);
         $sql = "
             SELECT t.ElementId, t.ps2, t.ps3
@@ -43,36 +46,53 @@ class UploadToolController extends Controller
         ";
         $bimResults = $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
-        // --- Step 2: Read Excel Columns ---
-        $excel = Excel::toCollection(null, $request->file('rawfile'));
+        // Step 2: Read Excel file (headers + first data row)
+        $excel = \Maatwebsite\Excel\Facades\Excel::toCollection(null, $request->file('rawfile'));
         $firstSheet = $excel->first();
-        $firstRow = $firstSheet?->first();
-        $excelColumns = $firstRow ? array_keys($firstRow->toArray()) : [];
 
-        // --- Step 3: Call AMS APIs ---
+        $headers = [];
+        $dataRows = [];
+
+        if ($firstSheet && $firstSheet->count() > 0) {
+            $headers = $firstSheet->first()->toArray(); // first row = headers
+
+            // get next rows as data
+            $dataRows = $firstSheet->skip(1)->map(fn($row) => $row->toArray())->filter()->values();
+        }
+
+        // Combine header + first data row for mapping
+        $rawfile_mapping = [];
+        if (!empty($headers) && $dataRows->isNotEmpty()) {
+            $firstData = $dataRows->first();
+            $rawfile_mapping[] = array_combine($headers, $firstData);
+        }
+
+        // Step 3: Call APIs
         $amsUrl = 'https://ams.reveronconsulting.com/JavaBridge/asset/index.php';
 
+        // Get database table columns
         $dbResponse = Http::asForm()->post($amsUrl, [
             'import_batch_no' => $request->import_batch_no,
             'data_id' => $request->data_id,
-            'asset_table_name' => 'app_fd_inv_pavement',
+            'asset_table_name' => $request->asset_table_name,
             'mode' => 'get_table_columns'
         ])->json();
 
+        // Get excel columns (mapping)
         $excelResponse = Http::asForm()->post($amsUrl, [
             'import_batch_no' => $request->import_batch_no,
             'data_id' => $request->data_id,
-            'asset_table_name' => 'app_fd_inv_pavement',
-            'rawfile_mapping' => json_encode([$bimResults[0] ?? []]),
+            'asset_table_name' => $request->asset_table_name,
+            'rawfile_mapping' => json_encode($rawfile_mapping ?? []),
             'mode' => 'get_excel_columns'
         ])->json();
 
         return response()->json([
             'message' => 'Files processed successfully.',
             'bim_count' => count($bimResults),
-            'excel_columns' => $excelColumns,
             'db_columns' => $dbResponse['columns'] ?? [],
             'raw_columns' => $excelResponse['columns'] ?? [],
+            'rawfile_mapping' => $rawfile_mapping,
         ]);
     }
 
