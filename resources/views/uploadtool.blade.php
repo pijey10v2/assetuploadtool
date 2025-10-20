@@ -1,5 +1,18 @@
 @extends('layouts.app')
 
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Optional: Make it fit Bootstrap's form style */
+    .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px;
+    }
+</style>
+
 @section('content')
 <div class="container mt-5">
     <div class="row g-4 align-items-start">
@@ -36,21 +49,15 @@
                     </div> -->
 
                     <div class="mb-3">
-                        <label for="bimfile" class="form-label">BIM File <span class="text-danger">*</span></label>
+                        <label for="bimfile" class="form-label">Select BIM File <span class="text-danger">*</span></label>
                         <select class="form-select" id="bimfile" name="bimfile" required>
-                            <option value="">-- Select BIM File --</option>
+                            <option value="">Select BIM File...</option>
                             @foreach($bimFiles as $file)
-                                @php
-                                    $size = Storage::size('bimfiles/' . $file);
-                                    $sizeKb = round($size / 1024, 2);
-                                @endphp
-                                <option value="{{ $file }}">{{ $file }} ({{ $sizeKb }} KB)</option>
+                                <option value="{{ $file }}">{{ $file }}</option>
                             @endforeach
                         </select>
                         <div class="invalid-feedback">Please select a BIM file.</div>
                     </div>
-
-
 
                     <!-- RAW File -->
                     <div class="mb-3">
@@ -69,12 +76,24 @@
                     </div>
 
                     <!-- Data ID -->
-                    <div class="mb-3">
+                    <!-- <div class="mb-3">
                         <label for="data_id" class="form-label">Data ID <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" id="data_id" name="data_id"
                             placeholder="Enter data ID" required>
                         <div class="invalid-feedback">Please enter a data ID.</div>
+                    </div> -->
+
+                    <div class="mb-3">
+                        <label for="data_id" class="form-label">Select Data ID (Layer Name) <span class="text-danger">*</span></label>
+                        <select class="form-select" id="data_id" name="data_id" required>
+                            <option value="">Select Layer...</option>
+                            @foreach($layers as $layer)
+                                <option value="{{ $layer->Data_ID }}"> Data ID: {{ $layer->Data_ID }} - Layer Name: {{ $layer->Layer_Name }}</option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback">Please select a Data ID.</div>
                     </div>
+
 
                     <!-- Mapping Source -->
                     <div class="mb-3">
@@ -126,6 +145,7 @@
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -272,5 +292,21 @@ $(document).ready(function() {
 
     // Load tables when the page loads
     document.addEventListener("DOMContentLoaded", loadAssetTables);
-  </script>
+</script>
+
+<script>
+    $(document).ready(function() {
+        $('#bimfile').select2({
+            placeholder: 'Search BIM File...',
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#data_id').select2({
+            placeholder: 'Search Layer Name...',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
 @endpush

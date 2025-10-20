@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use PDO;
 use Illuminate\Support\Facades\Storage;
+use App\Models\ProjectLayer;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -15,13 +16,20 @@ class UploadToolController extends Controller
 {
     public function index()
     {
+        // Fetch Data_ID and Layer_Name pairs from SQL Server
+        $layers = ProjectLayer::select('Data_ID', 'Layer_Name')
+            ->whereNotNull('Data_ID')
+            ->orderBy('Layer_Name', 'asc')
+            ->distinct()
+            ->get();
+
          // Get all .bim files inside storage/app/bimfiles
         $bimFiles = collect(Storage::files('bimfiles'))
             ->filter(fn($file) => str_ends_with(strtolower($file), '.bim'))
             ->map(fn($file) => basename($file))
             ->values();
 
-        return view('uploadtool', compact('bimFiles'));
+        return view('uploadtool', compact('bimFiles', 'layers'));
     }
 
     public function store(Request $request)
