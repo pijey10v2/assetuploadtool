@@ -124,7 +124,7 @@
                         <tr>
                             <th width="45%">Database Column</th>
                             <th width="45%">Excel Column</th>
-                            <th width="10%" class="text-center">Action</th>
+                            <!-- <th width="10%" class="text-center">Action</th> -->
                         </tr>
                     </thead>
                     <tbody>
@@ -134,12 +134,30 @@
                     </tbody>
                 </table>
 
-                <div class="d-flex justify-content-end mt-3">
-                    <button id="add-row" type="button" class="btn btn-outline-primary btn-sm">
+                <!-- Buttons Row -->
+                <div class="d-flex justify-content-between mt-3">
+                    <!-- <button id="add-row" type="button" class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-plus-circle me-1"></i> Add Custom Mapping
+                    </button> -->
+
+                    <button id="execute-update" type="button" class="btn btn-success btn-sm" disabled>
+                        <i class="bi bi-play-circle me-1"></i> Execute Data Update
                     </button>
                 </div>
+
+                <!-- Progress Bar -->
+                <div id="execute-progress-container" class="mt-3" style="display: none;">
+                    <div class="progress" style="height: 20px;">
+                        <div id="execute-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                            role="progressbar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <!-- Execution Status -->
+                <div id="execute-status" class="mt-3"></div>
             </div>
+        </div>
+
         </div>
 
         </div>
@@ -240,10 +258,10 @@ $(document).ready(function() {
         });
     });
 
-    // Execute Data Update Button Handler
-    $('#executeBtn').on('click', function() {
-        alert('Executing data update...');
-    });
+    // Enable "Execute Data Update" button when mapping table is ready
+    function enableExecuteButton() {
+        $('#execute-update').prop('disabled', false);
+    }
 
     // Render Mapping Table with searchable dropdowns
     function renderMappingTable(dbCols, excelCols) {
@@ -261,7 +279,7 @@ $(document).ready(function() {
 
         dbCols.forEach((dbCol) => {
             let options = excelCols.map(col => `<option value="${col}">${col}</option>`).join('');
-
+            
             tbody.append(`
                 <tr>
                     <td><input type="text" class="form-control db-col-input" value="${dbCol}" readonly></td>
@@ -271,16 +289,19 @@ $(document).ready(function() {
                             ${options}
                         </select>
                     </td>
-                    <td class="text-center">
-                        <button type="button" class="btn btn-sm btn-danger remove-row">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
                 </tr>
             `);
+
+            // <td class="text-center">
+            //     <button type="button" class="btn btn-sm btn-danger remove-row">
+            //         <i class="bi bi-trash"></i>
+            //     </button>
+            // </td>
         });
 
         initSelect2();
+
+        enableExecuteButton(); // enable execute button after rendering
     }
 
     // Initialize Select2
