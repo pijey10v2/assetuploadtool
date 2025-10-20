@@ -23,12 +23,34 @@
                     @csrf
 
                     <!-- BIM File -->
+                     
+                    <!-- <div class="mb-3">
+                        <label for="bimfile" class="form-label">Select BIM File <span class="text-danger">*</span></label>
+                        <select class="form-select" id="bimfile" name="bimfile" required>
+                            <option value="">-- Select BIM File --</option>
+                            @foreach($bimFiles as $file)
+                                <option value="{{ $file }}">{{ $file }}</option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback">Please select a BIM file.</div>
+                    </div> -->
+
                     <div class="mb-3">
                         <label for="bimfile" class="form-label">BIM File <span class="text-danger">*</span></label>
-                        <input class="form-control" type="file" id="bimfile" name="bimfile"
-                            accept=".bim,.sqlite,.sqlite3,.db" required>
-                        <div class="invalid-feedback">Please select a valid BIM file (.bim / .sqlite / .sqlite3 / .db).</div>
+                        <select class="form-select" id="bimfile" name="bimfile" required>
+                            <option value="">-- Select BIM File --</option>
+                            @foreach($bimFiles as $file)
+                                @php
+                                    $size = Storage::size('bimfiles/' . $file);
+                                    $sizeKb = round($size / 1024, 2);
+                                @endphp
+                                <option value="{{ $file }}">{{ $file }} ({{ $sizeKb }} KB)</option>
+                            @endforeach
+                        </select>
+                        <div class="invalid-feedback">Please select a BIM file.</div>
                     </div>
+
+
 
                     <!-- RAW File -->
                     <div class="mb-3">

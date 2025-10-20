@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use PDO;
+use Illuminate\Support\Facades\Storage;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -14,7 +15,13 @@ class UploadToolController extends Controller
 {
     public function index()
     {
-        return view('uploadtool');
+         // Get all .bim files inside storage/app/bimfiles
+        $bimFiles = collect(Storage::files('bimfiles'))
+            ->filter(fn($file) => str_ends_with(strtolower($file), '.bim'))
+            ->map(fn($file) => basename($file))
+            ->values();
+
+        return view('uploadtool', compact('bimFiles'));
     }
 
     public function store(Request $request)
@@ -23,17 +30,20 @@ class UploadToolController extends Controller
         set_time_limit(0);
 
         $request->validate([
-            'bimfile' => 'required|file|mimes:bim,sqlite,sqlite3,db|max:51200',
+            // 'bimfile' => 'required|file|mimes:bim,sqlite,sqlite3,db|max:51200',
+            'bimfile' => 'required|string',
             'rawfile' => 'required|file|mimes:xlsx,xls,csv|max:51200',
             'import_batch_no' => 'required|string',
             'data_id' => 'required|string',
         ]);
 
         // Save uploaded files
-        $bimPath = $request->file('bimfile')->store('uploads');
+        //$bimPath = $request->file('bimfile')->store('uploads');
         $rawPath = $request->file('rawfile')->store('uploads');
 
-        $bimFullPath = storage_path('app/' . $bimPath);
+        // Use selected BIM file from storage/app/bimfiles
+        //$bimFullPath = storage_path('app/' . $bimPath);
+        $bimFullPath = storage_path('app/bimfiles/' . $request->bimfile);
         $rawFullPath = storage_path('app/' . $rawPath);
 
         // Step 1: Read SQLite BIM Columns
