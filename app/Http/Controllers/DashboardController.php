@@ -26,14 +26,23 @@ class DashboardController extends Controller
 
         // UPLOADED EXCEL FILES (storage/app/uploads)
         $excelFiles = collect(Storage::files('uploads'))
-            ->filter(fn($file) => preg_match('/\.(xlsx|xls|csv)$/i', $file))
-            ->map(fn($file) => [
+        ->filter(fn($file) => preg_match('/\.(xlsx|xls|csv)$/i', $file))
+        ->map(function ($file) {
+            $ts = Storage::lastModified($file);
+            $exact = Carbon::createFromTimestamp($ts)->format('Y-m-d H:i:s');
+            $human = Carbon::createFromTimestamp($ts)->diffForHumans();
+
+            return [
                 'name' => basename($file),
                 'size' => round(Storage::size($file) / 1024, 2), // KB
-                'modified' => Carbon::createFromTimestamp(Storage::lastModified($file))->diffForHumans(),
-            ])
-            ->sortByDesc('modified')
-            ->values();
+                'modified_timestamp' => $ts,     // for sorting
+                'modified_exact'     => $exact,  // precise display
+                'modified_human'     => $human,  // human display
+                'modified'           => $human,  // alias to keep old Blade working
+            ];
+        })
+        ->sortByDesc('modified_timestamp')
+        ->values();
 
         $excelCount = $excelFiles->count();
         $latestExcel = $excelFiles->first();

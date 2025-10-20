@@ -105,7 +105,7 @@
                                 <tr>
                                     <td>{{ $file['name'] }}</td>
                                     <td>{{ $file['size'] }}</td>
-                                    <td>{{ $file['modified'] }}</td>
+                                    <td>{{ $file['modified_exact'] }} <small class="text-muted">({{ $file['modified_human'] }})</small></td>
                                 </tr>
                             @empty
                                 <tr>
