@@ -114,29 +114,34 @@
 
         <!-- Right Column: Mapping Table -->
         <div class="col-lg-8 col-md-7">
-            <div class="card shadow-sm p-4 h-100">
-                <h4 class="text-center mb-4">Database & Excel Columns Mapping</h4>
-                <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                    <table class="table table-bordered align-middle text-center" id="mapping-table">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Database Columns</th>
-                                <th>Excel Columns (Raw File)</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td colspan="2" class="text-muted">Mapping data will appear here after processing.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+           <div class="card mt-4 shadow-sm">
+            <div class="card-header fw-bold bg-white">
+                <i class="bi bi-diagram-3 text-primary me-2"></i> Column Mapping
+            </div>
+            <div class="card-body">
+                <table id="mapping-table" class="table table-bordered align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="45%">Database Column</th>
+                            <th width="45%">Excel Column</th>
+                            <th width="10%" class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="3" class="text-center text-muted">No mapping data available.</td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                <!-- Execute Button -->
-                <div class="text-center mt-4" id="execute-btn-container" style="display:none;">
-                    <button id="executeBtn" class="btn btn-success px-4 py-2">Execute Data Update</button>
+                <div class="d-flex justify-content-end mt-3">
+                    <button id="add-row" type="button" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i> Add Custom Mapping
+                    </button>
                 </div>
             </div>
+        </div>
+
         </div>
     </div>
 </div>
@@ -185,6 +190,10 @@ $(document).ready(function() {
                 $('#upload-status').html('');
             },
             success: function(response) {
+
+                // store Excel columns globally for future "Add Row" usage
+                window.excelColumns = response.raw_columns || []; // store for later use in add-row
+
                 $('#progress-bar')
                     .removeClass('bg-info progress-bar-striped progress-bar-animated')
                     .addClass('bg-success')
@@ -197,6 +206,7 @@ $(document).ready(function() {
                     </div>
                 `);
 
+                // render initial mapping table
                 renderMappingTable(response.db_columns, response.raw_columns);
 
                 // Show Execute button
@@ -235,31 +245,147 @@ $(document).ready(function() {
         alert('Executing data update...');
     });
 
-    // Render Mapping Table
+    // Render Mapping Table with searchable dropdowns
     function renderMappingTable(dbCols, excelCols) {
         const tbody = $('#mapping-table tbody');
         tbody.empty();
 
-        const maxRows = Math.max(dbCols.length, excelCols.length);
-
-        if (maxRows === 0) {
+        if (!dbCols.length && !excelCols.length) {
             tbody.append(`
                 <tr>
-                    <td colspan="2" class="text-muted">No mapping data available.</td>
+                    <td colspan="3" class="text-center text-muted">No mapping data available.</td>
                 </tr>
             `);
             return;
         }
 
-        for (let i = 0; i < maxRows; i++) {
+        dbCols.forEach((dbCol) => {
+            let options = excelCols.map(col => `<option value="${col}">${col}</option>`).join('');
+
             tbody.append(`
                 <tr>
-                    <td>${dbCols[i] ? dbCols[i] : ''}</td>
-                    <td>${excelCols[i] ? excelCols[i] : ''}</td>
+                    <td><input type="text" class="form-control db-col-input" value="${dbCol}" readonly></td>
+                    <td>
+                        <select class="form-select excel-column-select" data-dbcol="${dbCol}">
+                            <option value="">-- Select Excel Column --</option>
+                            ${options}
+                        </select>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-sm btn-danger remove-row">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `);
+        });
+
+        initSelect2();
+    }
+
+    // Initialize Select2
+    function initSelect2() {
+        $('.excel-column-select').select2({
+            placeholder: 'Search Excel Column...',
+            allowClear: true,
+            width: '100%'
+        });
+    }
+
+    // Helper: Get all current DB column names (trimmed)
+    function getAllDbCols() {
+        const cols = [];
+        $('.db-col-input').each(function() {
+            cols.push($(this).val().trim().toLowerCase());
+        });
+        return cols;
+    }
+
+    // Add new custom mapping row
+    $('#add-row').on('click', function() {
+        const tbody = $('#mapping-table tbody');
+
+        // Remove "no data" message if present
+        if (tbody.find('tr td[colspan]').length) tbody.empty();
+
+        // Excel column options
+        const excelCols = window.excelColumns || [];
+        const options = excelCols.map(col => `<option value="${col}">${col}</option>`).join('');
+
+        tbody.append(`
+            <tr>
+                <td>
+                    <input type="text" class="form-control db-col-input new-db-col" placeholder="Enter new database column name">
+                    <div class="invalid-feedback small">Column already exists.</div>
+                </td>
+                <td>
+                    <select class="form-select excel-column-select">
+                        <option value="">-- Select Excel Column --</option>
+                        ${options}
+                    </select>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger remove-row">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `);
+
+        initSelect2();
+    });
+
+    // Real-time duplicate validation
+    $(document).on('input', '.new-db-col', function() {
+        const currentInput = $(this);
+        const currentValue = currentInput.val().trim().toLowerCase();
+        const allCols = getAllDbCols();
+
+        // Count how many times this value appears
+        const duplicateCount = allCols.filter(name => name === currentValue).length;
+
+        if (duplicateCount > 1 && currentValue !== '') {
+            currentInput.addClass('is-invalid');
+            currentInput.attr('title', 'Duplicate column name');
+        } else {
+            currentInput.removeClass('is-invalid');
+            currentInput.removeAttr('title');
+        }
+    });
+
+    // Remove mapping row
+    $(document).on('click', '.remove-row', function() {
+        $(this).closest('tr').remove();
+
+        const tbody = $('#mapping-table tbody');
+        if (!tbody.children().length) {
+            tbody.append(`
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No mapping data available.</td>
                 </tr>
             `);
         }
+    });
+
+    // Collect selected mappings (for submission)
+    function getSelectedMappings() {
+        const mappings = [];
+
+        $('#mapping-table tbody tr').each(function() {
+            const dbColInput = $(this).find('.db-col-input');
+            const dbCol = dbColInput.val().trim();
+            const excelCol = $(this).find('.excel-column-select').val();
+
+            // Skip invalid or duplicate rows
+            if (dbCol && excelCol && !dbColInput.hasClass('is-invalid')) {
+                mappings.push({ [dbCol]: excelCol });
+            }
+        });
+
+        return mappings;
     }
+
+
 });
 </script>
 
