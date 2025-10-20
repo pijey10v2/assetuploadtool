@@ -78,7 +78,7 @@
 
                     <!-- Mapping Source -->
                     <div class="mb-3">
-                        <label for="asset_table_name" class="form-label">Asset Table</label>
+                        <label for="asset_table_name" class="form-label">Asset Table <span class="text-danger">*</span></label>
                          <select class="form-select" id="asset_table_name" name="asset_table_name" required>
                             <option selected disabled><span class="spinner-border spinner-border-sm"></span> Loading...</option>
                         </select>

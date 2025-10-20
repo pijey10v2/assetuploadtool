@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UploadToolController;
 
 /*
@@ -15,14 +16,20 @@ use App\Http\Controllers\UploadToolController;
 |
 */
 
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 Route::get('/', function () {
-    return view('welcome');
+    return auth()->check() ? redirect('/dashboard') : view('welcome');
 });
 
 // Protected dashboard route (only for logged-in users)
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth'])->name('dashboard');
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// })->middleware(['auth'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth'])
+    ->name('dashboard');
 
 // Breeze provides built-in auth routes (login, register, etc.)
 require __DIR__.'/auth.php';
