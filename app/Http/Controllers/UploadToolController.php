@@ -8,6 +8,8 @@ use Maatwebsite\Excel\Facades\Excel;
 use PDO;
 use Illuminate\Support\Facades\Storage;
 use App\Models\ProjectLayer;
+use App\Jobs\ProcessExcelInsertJob;
+use Illuminate\Support\Facades\Cache;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -111,7 +113,46 @@ class UploadToolController extends Controller
             'db_columns' => $dbResponse['columns'] ?? [],
             'raw_columns' => $excelResponse['columns'] ?? [],
             'rawfile_mapping' => $rawfile_mapping,
+            'rawfile_path' => $rawPath, // Make sure this exists
         ]);
+    }
+
+    public function executeUpdate(Request $request)
+    {
+        $request->validate([
+            'mappings' => 'required|array',
+            'rawfile_path' => 'required|string',
+            'import_batch_no' => 'required|string',
+            'data_id' => 'required|string',
+        ]);
+
+        // Generate unique job ID
+        $jobId = uniqid('upload_', true);
+
+        // Store initial progress
+        Cache::put("upload_progress_{$jobId}", [
+            'status' => 'starting',
+            'progress' => 0
+        ], now()->addMinutes(10));
+
+        // Dispatch background job
+        ProcessExcelInsertJob::dispatch($jobId, $request->rawfile_path, $request->mappings, $request->import_batch_no, $request->data_id);
+
+        return response()->json([
+            'message' => 'Data update started.',
+            'job_id' => $jobId
+        ]);
+    }
+
+    public function getProgress(Request $request)
+    {
+        $jobId = $request->query('job_id');
+        $progress = Cache::get("upload_progress_{$jobId}", [
+            'status' => 'unknown',
+            'progress' => 0
+        ]);
+
+        return response()->json($progress);
     }
 
 

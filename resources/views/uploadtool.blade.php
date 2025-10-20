@@ -173,6 +173,18 @@
 <script>
 $(document).ready(function() {
 
+    $('#bimfile').select2({
+        placeholder: 'Search BIM File...',
+        allowClear: true,
+        width: '100%'
+    });
+
+    $('#data_id').select2({
+        placeholder: 'Search Layer Name...',
+        allowClear: true,
+        width: '100%'
+    });
+
     // Handle form submission
     $('#uploadForm').on('submit', function(e) {
         e.preventDefault();
@@ -208,6 +220,10 @@ $(document).ready(function() {
                 $('#upload-status').html('');
             },
             success: function(response) {
+                
+                window.rawFilePath = response.rawfile_path; // Save for later use
+                window.importBatchNo = $('#import_batch_no').val();
+                window.dataId = $('#data_id').val();
 
                 // store Excel columns globally for future "Add Row" usage
                 window.excelColumns = response.raw_columns || []; // store for later use in add-row
@@ -235,7 +251,7 @@ $(document).ready(function() {
                     .prop('disabled', false)
                     .text('Process Again');
 
-                form.reset();
+                //form.reset(); // clear form values after successful upload
                 $(form).removeClass('was-validated');
             },
             error: function(xhr, status, error) {
@@ -406,6 +422,93 @@ $(document).ready(function() {
         return mappings;
     }
 
+    // Execute Data Update (with real progress polling)
+    $('#execute-update').on('click', function() {
+        const mappings = getSelectedMappings();
+
+        if (!mappings.length) {
+            $('#execute-status').html(`
+                <div class="alert alert-warning">
+                    Please complete your column mappings before executing.
+                </div>
+            `);
+            return;
+        }
+
+        // Disable button
+        $(this).prop('disabled', true);
+
+        // Show progress bar
+        $('#execute-progress-container').show();
+        const progressBar = $('#execute-progress-bar');
+        const status = $('#execute-status');
+
+        progressBar
+            .removeClass('bg-danger bg-success')
+            .addClass('bg-info progress-bar-striped progress-bar-animated')
+            .css('width', '0%')
+            .text('Initializing...');
+
+        $.ajax({
+            url: '/uploadtool/execute-update',
+            type: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                mappings: mappings,
+                rawfile_path: window.rawFilePath,
+                import_batch_no: window.importBatchNo, // from memory
+                data_id: window.dataId, // from memory
+            },
+            success: function(response) {
+                const jobId = response.job_id;
+                trackProgress(jobId);
+            },
+            error: function(xhr) {
+                progressBar.removeClass('bg-info').addClass('bg-danger').text('Error');
+                status.html(`<div class="alert alert-danger mt-3">${xhr.responseJSON?.message || 'Error starting job.'}</div>`);
+                $('#execute-update').prop('disabled', false);
+            }
+        });
+    });
+
+    // Function: Poll for progress
+    window.trackProgress = function(jobId) {
+        const progressBar = $('#execute-progress-bar');
+        const status = $('#execute-status');
+        let polling = setInterval(() => {
+            $.ajax({
+                url: '/uploadtool/progress',
+                type: 'GET',
+                data: { job_id: jobId },
+                success: function(data) {
+                    const percent = data.progress || 0;
+                    progressBar.css('width', percent + '%').text(percent + '%');
+
+                    if (data.status === 'done') {
+                        clearInterval(polling);
+                        progressBar.removeClass('bg-info').addClass('bg-success').text('Completed');
+                        status.html(`
+                            <div class="alert alert-success mt-3">
+                                <strong>Data Insert Complete</strong><br>
+                                Inserted: ${data.inserted} / ${data.total} rows
+                            </div>
+                        `);
+                        $('#execute-update').prop('disabled', false);
+                    } else if (data.status === 'error') {
+                        clearInterval(polling);
+                        progressBar.removeClass('bg-info').addClass('bg-danger').text('Error');
+                        status.html(`<div class="alert alert-danger mt-3">${data.message}</div>`);
+                        $('#execute-update').prop('disabled', false);
+                    }
+                },
+                error: function() {
+                    clearInterval(polling);
+                    progressBar.removeClass('bg-info').addClass('bg-danger').text('Error');
+                }
+            });
+        }, 1000);
+    };
+
 
 });
 </script>
@@ -439,21 +542,5 @@ $(document).ready(function() {
 
     // Load tables when the page loads
     document.addEventListener("DOMContentLoaded", loadAssetTables);
-</script>
-
-<script>
-    $(document).ready(function() {
-        $('#bimfile').select2({
-            placeholder: 'Search BIM File...',
-            allowClear: true,
-            width: '100%'
-        });
-
-        $('#data_id').select2({
-            placeholder: 'Search Layer Name...',
-            allowClear: true,
-            width: '100%'
-        });
-    });
 </script>
 @endpush

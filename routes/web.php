@@ -45,3 +45,11 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 Route::get('/uploadtool', [UploadToolController::class, 'index'])->middleware(['auth'])->name('uploadtool');
 Route::post('/uploadtool', [UploadToolController::class, 'store'])->middleware(['auth'])->name('uploadtool.store');
+
+Route::post('/uploadtool/execute-update', [UploadToolController::class, 'executeUpdate'])
+    ->middleware(['auth'])
+    ->name('uploadtool.execute');
+
+Route::get('/uploadtool/progress', [UploadToolController::class, 'getProgress'])
+    ->middleware(['auth'])
+    ->name('uploadtool.progress');
