@@ -1,0 +1,39 @@
+<div class="card mt-4 shadow-sm">
+    <div class="card-header fw-bold bg-white">
+        <i class="bi bi-diagram-3 text-primary me-2"></i> Column Mapping
+    </div>
+
+    <div class="card-body">
+        <table id="mapping-table" class="table table-bordered align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th width="45%">Database Column</th>
+                    <th width="45%">Excel Column</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="3" class="text-center text-muted">No mapping data available.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Buttons Row -->
+        <div class="d-flex justify-content-between mt-3">
+            <button id="execute-update" type="button" class="btn btn-success btn-sm" disabled>
+                <i class="bi bi-play-circle me-1"></i> Execute Data Update
+            </button>
+        </div>
+
+        <!-- Progress -->
+        <div id="execute-progress-container" class="mt-3" style="display: none;">
+            <div class="progress" style="height: 20px;">
+                <div id="execute-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
+                    role="progressbar" style="width: 0%">0%</div>
+            </div>
+        </div>
+
+        <!-- Status -->
+        <div id="execute-status" class="mt-3"></div>
+    </div>
+</div>

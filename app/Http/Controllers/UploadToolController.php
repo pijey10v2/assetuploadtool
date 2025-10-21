@@ -31,7 +31,7 @@ class UploadToolController extends Controller
             ->map(fn($file) => basename($file))
             ->values();
 
-        return view('uploadtool', compact('bimFiles', 'layers'));
+        return view('uploadtool.index', compact('bimFiles', 'layers'));
     }
 
     public function store(Request $request)
