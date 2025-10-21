@@ -93,6 +93,8 @@ $(document).ready(function () {
                 window.rawFilePath = response.rawfile_path;
                 window.importBatchNo = $('#import_batch_no').val();
                 window.dataId = $('#data_id').val();
+                // asset table name
+                window.assetTableName = $('#asset_table_name').val();
                 window.excelColumns = response.raw_columns || [];
 
                 $('#progress-bar')
@@ -208,6 +210,7 @@ $(document).ready(function () {
                 rawfile_path: window.rawFilePath,
                 import_batch_no: window.importBatchNo,
                 data_id: window.dataId,
+                asset_table_name: window.assetTableName,
             },
             success: function (response) {
                 trackProgress(response.job_id);

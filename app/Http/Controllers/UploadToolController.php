@@ -124,6 +124,7 @@ class UploadToolController extends Controller
             'rawfile_path' => 'required|string',
             'import_batch_no' => 'required|string',
             'data_id' => 'required|string',
+            'asset_table_name' => 'required|string',
         ]);
 
         // Generate unique job ID
@@ -136,7 +137,7 @@ class UploadToolController extends Controller
         ], now()->addMinutes(10));
 
         // Dispatch background job
-        ProcessExcelInsertJob::dispatch($jobId, $request->rawfile_path, $request->mappings, $request->import_batch_no, $request->data_id);
+        ProcessExcelInsertJob::dispatch($jobId, $request->rawfile_path, $request->mappings, $request->import_batch_no, $request->data_id, $request->asset_table_name);
 
         return response()->json([
             'message' => 'Data update started.',
