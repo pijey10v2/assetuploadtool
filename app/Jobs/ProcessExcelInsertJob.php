@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
+use Log;
 
 class ProcessExcelInsertJob implements ShouldQueue
 {
@@ -41,6 +42,8 @@ class ProcessExcelInsertJob implements ShouldQueue
      */
     public function handle()
     {
+        Log::info("Job started: {$this->jobId}");
+
         $rawFullPath = storage_path('app/' . $this->rawPath);
 
         if (!Storage::exists($this->rawPath)) {
@@ -105,5 +108,8 @@ class ProcessExcelInsertJob implements ShouldQueue
             'total' => $totalRows,
             'progress' => 100
         ], now()->addMinutes(10));
+
+        Log::info("Job completed: {$this->jobId}");
     }
+    
 }

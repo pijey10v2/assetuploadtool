@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\ProjectLayer;
 use App\Jobs\ProcessExcelInsertJob;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -135,6 +136,9 @@ class UploadToolController extends Controller
             'status' => 'starting',
             'progress' => 0
         ], now()->addMinutes(10));
+
+        // Log dispatch
+        Log::info("Dispatching job: {$jobId}");
 
         // Dispatch background job
         ProcessExcelInsertJob::dispatch($jobId, $request->rawfile_path, $request->mappings, $request->import_batch_no, $request->data_id, $request->asset_table_name);
