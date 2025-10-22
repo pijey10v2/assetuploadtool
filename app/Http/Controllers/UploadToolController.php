@@ -160,13 +160,4 @@ class UploadToolController extends Controller
         return response()->json($progress);
     }
 
-
-    public function store1(Request $request)
-    {
-        if ($request->hasFile('file')) {
-            $path = $request->file('file')->store('uploads');
-            return back()->with('success', "File uploaded to: $path");
-        }
-        return back()->with('error', 'No file selected');
-    }
 }
