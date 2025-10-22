@@ -15,6 +15,11 @@
     #execute-loading-container {
         transition: opacity 0.3s ease-in-out;
     }
+
+    /* Highlight locked mapping rows */
+    tr:has(select[disabled]) {
+        background-color: #f8f9fa;
+    }
 </style>
 
 @section('content')

@@ -151,19 +151,43 @@ $(document).ready(function () {
         }
 
         dbCols.forEach(dbCol => {
-            const options = excelCols.map(col => `<option value="${col}">${col}</option>`).join('');
+
+            // Special case: Auto-lock "c_model_element"
+            let isLocked = dbCol === 'c_model_element';
+            let defaultValue = isLocked ? 'Element ID' : '';
+
+            // Filter out "Element ID" from all other dropdowns
+            const availableOptions = isLocked 
+                ? excelCols 
+                : excelCols.filter(col => col !== 'Element ID');
+
+            let options = availableOptions
+            .map(col => `<option value="${col}">${col}</option>`)
+            .join('');
+
             tbody.append(`
                 <tr>
-                    <td><input type="text" class="form-control db-col-input" value="${dbCol}" readonly></td>
                     <td>
-                        <select class="form-select excel-column-select" data-dbcol="${dbCol}">
+                        <input type="text" class="form-control db-col-input" 
+                            value="${dbCol}" readonly>
+                    </td>
+                    <td>
+                        <select class="form-select excel-column-select" 
+                                data-dbcol="${dbCol}" ${isLocked ? 'disabled' : ''}>
                             <option value="">-- Select Excel Column --</option>
                             ${options}
                         </select>
+                        ${isLocked ? `<input type="hidden" name="locked_mapping_${dbCol}" value="${defaultValue}">` : ''}
                     </td>
                 </tr>
             `);
         });
+
+        // Automatically select "Element ID" for c_model_element
+        const lockedSelect = $('select[data-dbcol="c_model_element"]');
+        if (lockedSelect.length) {
+            lockedSelect.val('Element ID').trigger('change'); // sets visible text
+        }
 
         $('.excel-column-select').select2({
             placeholder: 'Search Excel Column...',
