@@ -11,7 +11,7 @@
 
     <!-- Summary Cards -->
     <div class="row g-4 mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase text-muted mb-1">BIM Files</h6>
@@ -21,7 +21,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase text-muted mb-1">Uploaded Excel Files</h6>
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase text-muted mb-1">Last Upload</h6>
@@ -41,7 +41,7 @@
             </div>
         </div>
 
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
                     <h6 class="text-uppercase text-muted mb-1">Pending Tasks</h6>
@@ -49,7 +49,7 @@
                     <small class="text-muted">to review</small>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <!-- File Tables -->
