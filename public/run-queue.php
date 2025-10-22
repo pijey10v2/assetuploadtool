@@ -2,7 +2,7 @@
 // public/run-queue.php
 
 // Change directory to Laravel root (one level up from public)
-chdir(__DIR__ . '/..');
+chdir(__DIR__ . '../');
 
 // Optional: Increase limits
 ini_set('max_execution_time', 0);
