@@ -11,6 +11,18 @@
     .select2-container--default .select2-selection--single .select2-selection__rendered {
         line-height: 36px;
     }
+
+    /* #execute-progress-bar {
+        transition: width 0.6s ease-in-out;
+        font-weight: 600;
+        font-size: 0.85rem;
+        text-align: center;
+    } */
+    #execute-loading-container {
+        transition: opacity 0.3s ease-in-out;
+    }
+
+
 </style>
 
 @section('content')

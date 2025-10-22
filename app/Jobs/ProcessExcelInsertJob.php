@@ -89,17 +89,25 @@ class ProcessExcelInsertJob implements ShouldQueue
 
                 $processed++;
 
-                Cache::put("upload_progress_{$this->jobId}", [
-                    'status' => 'processing',
-                    'processed' => $processed,
-                    'total' => $totalRows,
-                    'inserted' => $inserted,
-                    'progress' => round(($processed / $totalRows) * 100)
-                ], now()->addMinutes(10));
+                // Update cache every few rows
+                if ($processed % 10 === 0 || $processed === $totalRows) {
+
+                    $progressPercent = $totalRows > 0 ? round(($processed / $totalRows) * 100, 2) : 0;
+
+                     \Log::info("Updating progress: {$processed}/{$totalRows} ({$progressPercent}%)");
+
+                    Cache::put("upload_progress_{$this->jobId}", [
+                        'status' => 'processing',
+                        'processed' => $processed,
+                        'total' => $totalRows,
+                        'inserted' => $inserted,
+                        'progress' => $progressPercent
+                    ], now()->addMinutes(10));
+                }
             }
 
             // Slight delay between chunks (optional)
-            usleep(300000); // 0.3 sec
+            usleep(250000); // 0.25 sec
         }
 
         Cache::put("upload_progress_{$this->jobId}", [

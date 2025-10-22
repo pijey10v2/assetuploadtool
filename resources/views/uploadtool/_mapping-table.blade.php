@@ -26,12 +26,22 @@
         </div>
 
         <!-- Progress -->
-        <div id="execute-progress-container" class="mt-3" style="display: none;">
+        <!-- <div id="execute-progress-container" class="mt-3" style="display: none;">
             <div class="progress" style="height: 20px;">
-                <div id="execute-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success"
-                    role="progressbar" style="width: 0%">0%</div>
+                <div id="execute-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: 0%">0%</div>
+            </div>
+        </div> -->
+        
+        <!-- Spinner Container -->
+        <div id="execute-loading-container" class="mt-3 text-center" style="display: none;">
+            <div class="spinner-border text-success mb-2" role="status" style="width: 2rem; height: 2rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <div id="execute-loading-message" class="fw-semibold text-muted">
+                Please wait while the data is being inserted/updated...
             </div>
         </div>
+
 
         <!-- Status -->
         <div id="execute-status" class="mt-3"></div>

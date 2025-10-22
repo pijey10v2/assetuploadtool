@@ -174,10 +174,26 @@ $(document).ready(function () {
 
     /**
      * =============================
+     *   HELPER: GET SELECTED MAPPINGS
+     * =============================
+     */
+    function getSelectedMappings() {
+        const mappings = [];
+        $('#mapping-table tbody tr').each(function () {
+            const dbCol = $(this).find('.db-col-input').val().trim();
+            const excelCol = $(this).find('.excel-column-select').val();
+            if (dbCol && excelCol) mappings.push({ [dbCol]: excelCol });
+        });
+        return mappings;
+    }
+
+    /**
+     * =============================
      *   EXECUTE DATA UPDATE
      * =============================
      */
     $('#execute-update').on('click', function () {
+
         const mappings = getSelectedMappings();
 
         if (!mappings.length) {
@@ -189,17 +205,15 @@ $(document).ready(function () {
             return;
         }
 
-        const progressBar = $('#execute-progress-bar');
+        const spinner = $('#execute-loading-container');
+        const message = $('#execute-loading-message');
         const status = $('#execute-status');
-        $(this).prop('disabled', true);
+        const button = $(this);
 
-        $('#execute-progress-container').show();
-
-        progressBar
-            .removeClass('bg-danger bg-success')
-            .addClass('bg-info progress-bar-striped progress-bar-animated')
-            .css('width', '0%')
-            .text('Initializing...');
+        // Show spinner and message
+        spinner.show();
+        message.text('Please wait while the data is being inserted/updated...');
+        button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span> Processing...');
 
         $.ajax({
             url: window.uploadToolConfig.routes.execute,
@@ -213,71 +227,175 @@ $(document).ready(function () {
                 asset_table_name: window.assetTableName,
             },
             success: function (response) {
-                trackProgress(response.job_id);
+                // Begin polling job progress
+                pollJobStatus(response.job_id, spinner, message, status, button);
             },
             error: function (xhr) {
-                progressBar.removeClass('bg-info').addClass('bg-danger').text('Error');
-                status.html(`<div class="alert alert-danger mt-3">${xhr.responseJSON?.message || 'Error starting job.'}</div>`);
-                $('#execute-update').prop('disabled', false);
+                spinner.hide();
+                button.prop('disabled', false).html('<i class="bi bi-play-circle me-1"></i> Execute Data Update');
+                status.html(`
+                    <div class="alert alert-danger mt-3">
+                        ${xhr.responseJSON?.message || 'Error starting job.'}
+                    </div>
+                `);
             }
         });
     });
 
-    /**
-     * =============================
-     *   PROGRESS TRACKING
-     * =============================
-     */
-    window.trackProgress = function (jobId) {
-        const progressBar = $('#execute-progress-bar');
-        const status = $('#execute-status');
+    // Poll progress (simplified spinner version)
+    function pollJobStatus(jobId, spinner, message, status, button) {
         let polling = setInterval(() => {
             $.ajax({
                 url: window.uploadToolConfig.routes.progress,
                 type: 'GET',
                 data: { job_id: jobId },
                 success: function (data) {
-                    const percent = data.progress || 0;
-                    progressBar.css('width', percent + '%').text(percent + '%');
+                    if (data.status === 'processing' || data.status === 'starting') {
+                        message.text('Please wait while the data is being inserted/updated...');
+                    }
 
                     if (data.status === 'done') {
                         clearInterval(polling);
-                        progressBar.removeClass('bg-info').addClass('bg-success').text('Completed');
+                        spinner.hide();
+                        message.text('');
                         status.html(`
-                            <div class="alert alert-success mt-3">
-                                <strong>Data Insert Complete</strong><br>
+                            <div class="alert alert-success mt-3 text-center">
+                                <strong>Data Insert Complete!</strong><br>
                                 Inserted: ${data.inserted} / ${data.total} rows
                             </div>
                         `);
-                        $('#execute-update').prop('disabled', false);
-                    } else if (data.status === 'error') {
+                        button.prop('disabled', false).html('<i class="bi bi-play-circle me-1"></i> Execute Data Update');
+                    }
+
+                    if (data.status === 'error') {
                         clearInterval(polling);
-                        progressBar.removeClass('bg-info').addClass('bg-danger').text('Error');
-                        status.html(`<div class="alert alert-danger mt-3">${data.message}</div>`);
-                        $('#execute-update').prop('disabled', false);
+                        spinner.hide();
+                        message.text('');
+                        status.html(`
+                            <div class="alert alert-danger mt-3 text-center">
+                                ${data.message || 'An error occurred while processing.'}
+                            </div>
+                        `);
+                        button.prop('disabled', false).html('<i class="bi bi-play-circle me-1"></i> Execute Data Update');
+                    }
+                },
+                error: function () {
+                    clearInterval(polling);
+                    spinner.hide();
+                    status.html(`
+                        <div class="alert alert-danger mt-3 text-center">
+                            Failed to check job progress.
+                        </div>
+                    `);
+                    button.prop('disabled', false).html('<i class="bi bi-play-circle me-1"></i> Execute Data Update');
+                }
+            });
+        }, 2000); // Poll every 2 seconds
+    }
+
+    /**
+     * =============================
+     *   PROGRESS TRACKING 
+     * =============================
+     */
+    window.trackProgress = function (jobId) {
+        const container = $('#execute-progress-container');
+        const progressBar = $('#execute-progress-bar');
+        const status = $('#execute-status');
+
+        // Ensure visibility
+        container.css({
+            display: 'block',
+            visibility: 'visible',
+            opacity: 1,
+            height: 'auto'
+        });
+        progressBar.show();
+
+        // Scroll into view
+        $('html, body').animate({
+            scrollTop: container.offset().top - 100
+        }, 400);
+
+        // Initialize state
+        progressBar
+            .removeClass('bg-danger bg-success')
+            .addClass('bg-info progress-bar-striped progress-bar-animated')
+            .css('width', '0%')
+            .text('0% - Please wait while the data is being inserted/updated...');
+
+        status.html(`
+            <div class="alert alert-info mt-3 mb-0 text-center">
+                Initializing data update process...
+            </div>
+        `);
+
+        let polling = setInterval(() => {
+            $.ajax({
+                url: window.uploadToolConfig.routes.progress,
+                type: 'GET',
+                data: { job_id: jobId },
+                cache: false,
+                success: function (data) {
+                    let percent = parseFloat(data.progress) || 0;
+                    let inserted = data.inserted || 0;
+                    let total = data.total || 0;
+
+                    // Update progress text and bar
+                    progressBar.css('width', percent + '%');
+                    progressBar.html(`${percent.toFixed(1)}% - Please wait while the data is being inserted/updated...`);
+
+                    // Force browser to repaint
+                    progressBar[0].offsetHeight; // <-- this line is crucial (forces reflow)
+
+                    status.html(`
+                        <div class="alert alert-info mt-3 mb-0 text-center">
+                            Processing data... (${inserted}/${total}) rows<br>
+                            Progress: ${percent.toFixed(1)}%
+                        </div>
+                    `);
+
+                    if (data.status === 'done') {
+                        clearInterval(polling);
+
+                        progressBar
+                            .removeClass('bg-info progress-bar-striped progress-bar-animated')
+                            .addClass('bg-success')
+                            .css('width', '100%')
+                            .text('100% - Completed');
+
+                        status.html(`
+                            <div class="alert alert-success mt-3 text-center">
+                                <strong>Data Insert Complete!</strong><br>
+                                Inserted: ${inserted} / ${total} rows
+                            </div>
+                        `);
+                    }
+
+                    if (data.status === 'error') {
+                        clearInterval(polling);
+                        progressBar
+                            .removeClass('bg-info')
+                            .addClass('bg-danger')
+                            .text('Error');
+                        status.html(`
+                            <div class="alert alert-danger mt-3 text-center">
+                                ${data.message || 'An error occurred while processing the data.'}
+                            </div>
+                        `);
                     }
                 },
                 error: function () {
                     clearInterval(polling);
                     progressBar.removeClass('bg-info').addClass('bg-danger').text('Error');
+                    status.html(`
+                        <div class="alert alert-danger mt-3 text-center">
+                            Could not retrieve progress updates.
+                        </div>
+                    `);
                 }
             });
         }, 1000);
     };
-
-    /**
-     * =============================
-     *   HELPER: GET SELECTED MAPPINGS
-     * =============================
-     */
-    function getSelectedMappings() {
-        const mappings = [];
-        $('#mapping-table tbody tr').each(function () {
-            const dbCol = $(this).find('.db-col-input').val().trim();
-            const excelCol = $(this).find('.excel-column-select').val();
-            if (dbCol && excelCol) mappings.push({ [dbCol]: excelCol });
-        });
-        return mappings;
-    }
 
 });
