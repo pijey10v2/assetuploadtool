@@ -286,7 +286,7 @@ $(document).ready(function () {
                         message.text('');
                         status.html(`
                             <div class="alert alert-success mt-3 text-center">
-                                <strong>Data Insert Complete!</strong><br>
+                                <strong>Data Successfully Processed and Updated!</strong><br>
                                 Inserted: ${data.inserted} / ${data.total} rows
                             </div>
                         `);
