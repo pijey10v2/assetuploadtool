@@ -67,6 +67,14 @@ class UploadToolController extends Controller
         ";
         $bimResults = $pdo->query($sql)->fetchAll(\PDO::FETCH_ASSOC);
 
+        $bimData = collect($bimResults)
+        ->map(fn($row) => [
+            'ElementId' => $row['ElementId'],
+            'ps2' => $row['ps2'],
+            //'ps3' => $row['ps3'],
+        ]);
+        //->take(20); // Limit to 20 rows
+
         // Step 2: Read Excel file (headers + first data row)
         $excel = \Maatwebsite\Excel\Facades\Excel::toCollection(null, $request->file('rawfile'));
         $firstSheet = $excel->first();
@@ -111,6 +119,7 @@ class UploadToolController extends Controller
         return response()->json([
             'message' => 'Files processed successfully.',
             'bim_count' => count($bimResults),
+            'bim_results' => $bimData, 
             'db_columns' => $dbResponse['columns'] ?? [],
             'raw_columns' => $excelResponse['columns'] ?? [],
             'rawfile_mapping' => $rawfile_mapping,
@@ -141,11 +150,17 @@ class UploadToolController extends Controller
         Log::info("Dispatching job: {$jobId}");
 
         // Dispatch background job
-        ProcessExcelInsertJob::dispatch($jobId, $request->rawfile_path, $request->mappings, $request->import_batch_no, $request->data_id, $request->asset_table_name);
+        ProcessExcelInsertJob::dispatch($jobId, $request->rawfile_path, $request->mappings, $request->import_batch_no, $request->data_id, $request->asset_table_name, $request->bim_results);
 
         return response()->json([
             'message' => 'Data update started.',
-            'job_id' => $jobId
+            'job_id' => $jobId,
+            'rawfile_path' => $request->rawfile_path,
+            'asset_table_name' => $request->asset_table_name,
+            'import_batch_no' => $request->import_batch_no,
+            'data_id' => $request->data_id,
+            'bim_results' => $request->bim_results,
+            'mappings' => $request->mappings,
         ]);
     }
 

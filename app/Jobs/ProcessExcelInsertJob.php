@@ -23,11 +23,12 @@ class ProcessExcelInsertJob implements ShouldQueue
     protected $dataId;
     protected $jobId;
     protected $assetTableName;
+    protected $bimResults;
 
     /**
      * Create a new job instance.
      */
-    public function __construct($jobId, $rawPath, $mappings, $importBatchNo, $dataId, $assetTableName)
+    public function __construct($jobId, $rawPath, $mappings, $importBatchNo, $dataId, $assetTableName, $bimResults)
     {
         $this->rawPath = $rawPath;
         $this->mappings = $mappings;
@@ -35,6 +36,7 @@ class ProcessExcelInsertJob implements ShouldQueue
         $this->dataId = $dataId;
         $this->jobId = $jobId;
         $this->assetTableName = $assetTableName;
+        $this->bimResults = $bimResults;
     }
 
     /**
@@ -81,6 +83,7 @@ class ProcessExcelInsertJob implements ShouldQueue
                     'data_id' => $this->dataId,
                     'asset_table_name' => $this->assetTableName,
                     'row_data' => json_encode($mapped),
+                    'bim_results' => json_encode($this->bimResults)
                 ]);
 
                 if ($response->successful()) {

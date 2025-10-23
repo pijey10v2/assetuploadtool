@@ -89,13 +89,14 @@ $(document).ready(function () {
                 $('#upload-status').html('');
             },
             success: function (response) {
+
                 // Save these globally for Execute step
                 window.rawFilePath = response.rawfile_path;
                 window.importBatchNo = $('#import_batch_no').val();
                 window.dataId = $('#data_id').val();
-                // asset table name
                 window.assetTableName = $('#asset_table_name').val();
                 window.excelColumns = response.raw_columns || [];
+                window.bimResults = response.bim_results || [];
 
                 $('#progress-bar')
                     .removeClass('bg-info progress-bar-striped progress-bar-animated')
@@ -249,6 +250,7 @@ $(document).ready(function () {
                 import_batch_no: window.importBatchNo,
                 data_id: window.dataId,
                 asset_table_name: window.assetTableName,
+                bim_results: window.bimResults,
             },
             success: function (response) {
                 // Begin polling job progress
