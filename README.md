@@ -17,9 +17,8 @@ The tool provides data mapping, real-time progress updates, and automated data i
 # ⚙️ Requirements
 | Requirement   | Version               |
 | ------------- | --------------------- |
-| PHP           | ≥ 8.2                 |
-| Laravel       | 10.x                  |
-| Node.js & npm | ≥ 18.x                |
+| PHP           | ≥ 8.2 (PHP 8.3.26)    |
+| Laravel       | 11.0                  |
 | Composer      | ≥ 2.x                 |
 | Database      | SQL Server            |
 | Queue Driver  | `database` or `redis` |
@@ -47,15 +46,15 @@ APP_DEBUG=true
 APP_URL=http://localhost:8080/
 
 # Database (SQL Server)
-DB_CONNECTION=sqlsrv
-DB_HOST=DT-PH-1016\SQLEXPRESS        
-DB_DATABASE=RI_Constructs_Assets_V4
-DB_USERNAME=your_username
-DB_PASSWORD=your_password
+DB_CONNECTION=sqlsrv  
+DB_HOST=DT-PH-1016\SQLEXPRESS          
+DB_DATABASE=RI_Constructs_Assets_V4  
+DB_USERNAME=your_username  
+DB_PASSWORD=your_password  
 
 # Cache / Queue
-CACHE_DRIVER=file
-QUEUE_CONNECTION=RI_Constructs_Assets_V4
+CACHE_DRIVER=file  
+QUEUE_CONNECTION=RI_Constructs_Assets_V4  
 
 # External API
 JOGET_API_URL=https://ams.reveronconsulting.com/JavaBridge/asset/index.php
