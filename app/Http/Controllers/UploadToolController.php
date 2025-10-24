@@ -48,9 +48,16 @@ class UploadToolController extends Controller
             'data_id' => 'required|string',
         ]);
 
+        $rawOriginalName = pathinfo($request->file('rawfile')->getClientOriginalName(), PATHINFO_FILENAME);
+        $rawExtension = $request->file('rawfile')->getClientOriginalExtension();
+        // Add readable timestamp suffix: -YYYY-MM-DD HH-MM-SS
+        $timestamp = now()->format('Y-m-d H-i-s');
+
         // Save uploaded files
-        //$bimPath = $request->file('bimfile')->store('uploads');
-        $rawPath = $request->file('rawfile')->store('uploads');
+        // $bimPath = $request->file('bimfile')->store('uploads');
+        // $rawPath = $request->file('rawfile')->store('uploads');
+        $rawFileName = "{$rawOriginalName}-{$timestamp}.{$rawExtension}";
+        $rawPath = $request->file('rawfile')->storeAs('uploads', $rawFileName);
 
         // Use selected BIM file from storage/app/bimfiles
         //$bimFullPath = storage_path('app/' . $bimPath);
@@ -124,6 +131,7 @@ class UploadToolController extends Controller
             'raw_columns' => $excelResponse['columns'] ?? [],
             'rawfile_mapping' => $rawfile_mapping,
             'rawfile_path' => $rawPath, // Make sure this exists
+            'raw_filename' => $rawFileName
         ]);
     }
 

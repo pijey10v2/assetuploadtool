@@ -13,12 +13,22 @@ class DashboardController extends Controller
         // BIM FILES (storage/app/bimfiles)
         $bimFiles = collect(Storage::files('bimfiles'))
             ->filter(fn($file) => str_ends_with(strtolower($file), '.bim'))
-            ->map(fn($file) => [
-                'name' => basename($file),
-                'size' => round(Storage::size($file) / 1024, 2), // KB
-                'modified' => Carbon::createFromTimestamp(Storage::lastModified($file))->diffForHumans(),
-            ])
-            ->sortByDesc('modified')
+            ->map(function ($file) {
+                $ts = Storage::lastModified($file);
+                $exact = Carbon::createFromTimestamp($ts)->format('Y-m-d H:i:s');
+                $human = Carbon::createFromTimestamp($ts)->diffForHumans();
+
+                return [
+                    'name' => basename($file),
+                    'size' => round(Storage::size($file) / 1024, 2), // KB
+                    'modified_timestamp' => $ts,     // for sorting
+                    'modified_exact'     => $exact,  // precise display
+                    'modified_human'     => $human,  // human display
+                    'modified'           => $human,  // alias to keep old Blade working
+                ];
+            })
+            ->sortByDesc('modified_timestamp')
+            //->take(20) // limit
             ->values();
 
         $bimCount = $bimFiles->count();
@@ -42,6 +52,7 @@ class DashboardController extends Controller
             ];
         })
         ->sortByDesc('modified_timestamp')
+        //->take(20) // limit
         ->values();
 
         $excelCount = $excelFiles->count();
