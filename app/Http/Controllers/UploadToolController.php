@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Maatwebsite\Excel\Facades\Excel;
 use PDO;
@@ -157,8 +158,21 @@ class UploadToolController extends Controller
         // Log dispatch
         Log::info("Dispatching job: {$jobId}");
 
+        // Get current user
+        $user = Auth::user();
+
         // Dispatch background job
-        ProcessExcelInsertJob::dispatch($jobId, $request->rawfile_path, $request->mappings, $request->import_batch_no, $request->data_id, $request->asset_table_name, $request->bim_results);
+        ProcessExcelInsertJob::dispatch(
+            $jobId, 
+            $request->rawfile_path, 
+            $request->mappings, 
+            $request->import_batch_no, 
+            $request->data_id, 
+            $request->asset_table_name, 
+            $request->bim_results,
+            $user->email,     // createdBy
+            $user->name       // createdByName
+        );
 
         return response()->json([
             'message' => 'Data update started.',
@@ -169,6 +183,8 @@ class UploadToolController extends Controller
             'data_id' => $request->data_id,
             'bim_results' => $request->bim_results,
             'mappings' => $request->mappings,
+            'createdBy' => $user->email,
+            'createdByName' => $user->name,
         ]);
     }
 

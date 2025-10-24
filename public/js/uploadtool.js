@@ -97,6 +97,8 @@ $(document).ready(function () {
                 window.assetTableName = $('#asset_table_name').val();
                 window.excelColumns = response.raw_columns || [];
                 window.bimResults = response.bim_results || [];
+                window.createdBy = response.createdBy;
+                window.createdByName = response.createdByName;
 
                 $('#progress-bar')
                     .removeClass('bg-info progress-bar-striped progress-bar-animated')
@@ -251,6 +253,8 @@ $(document).ready(function () {
                 data_id: window.dataId,
                 asset_table_name: window.assetTableName,
                 bim_results: window.bimResults,
+                createdBy: window.createdBy,
+                createdByName: window.createdByName,
             },
             success: function (response) {
                 // Begin polling job progress
