@@ -11,7 +11,7 @@ The tool provides data mapping, real-time progress updates, and automated data i
 ✅ Displays database vs raw data mapping table with editable dropdowns  
 ✅ Supports progress tracking during background processing (via Laravel Jobs & Cache)  
 ✅ Uses AJAX for upload and mapping without reloading the page  
-✅ Responsive Bootstrap 5.3.8 UI with progress bars and Select2 dropdowns  
+✅ Responsive Bootstrap 5.3.8 UI with loading spinner and Select2 dropdowns  
 ✅ SQL Server integration for dynamic dropdowns (e.g., Project Layers)  
 
 # ⚙️ Requirements
