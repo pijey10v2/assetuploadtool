@@ -5,15 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class RecentMapping extends Model
+class AssetMapping extends Model
 {
     use HasFactory;
 
+    protected $table = 'asset_mappings';
+
     protected $fillable = [
-        'createdBy',
-        'createdByName',
         'asset_table_name',
         'mappings',
+        'createdBy',
     ];
 
     protected $casts = [

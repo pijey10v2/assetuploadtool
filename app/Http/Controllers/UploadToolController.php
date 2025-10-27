@@ -12,7 +12,7 @@ use App\Models\ProjectLayer;
 use App\Jobs\ProcessExcelInsertJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
-use App\Models\RecentMapping;
+use App\Models\AssetMapping;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -126,8 +126,8 @@ class UploadToolController extends Controller
         ])->json();
 
         // Save recent mapping (by createdBy + table name)
-        $recentMapping = RecentMapping::where('createdBy', Auth::user()->email)
-        ->where('asset_table_name', $request->asset_table_name) 
+        $recentMapping = AssetMapping::where('createdBy', Auth::user()->email)
+        ->where('asset_table_name', $request->asset_table_name)
         ->first();
 
         return response()->json([
