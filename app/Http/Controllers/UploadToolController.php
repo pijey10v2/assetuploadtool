@@ -169,7 +169,7 @@ class UploadToolController extends Controller
         $user = Auth::user();
 
         // Save or update recent mapping (by createdBy + table name)
-        RecentMapping::updateOrCreate(
+        AssetMapping::updateOrCreate(
             [
                 'createdBy' => $user->email,
                 'asset_table_name' => $request->asset_table_name,
