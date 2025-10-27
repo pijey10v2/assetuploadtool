@@ -15,6 +15,7 @@ class AssetMapping extends Model
         'asset_table_name',
         'mappings',
         'createdBy',
+        'createdByName',
     ];
 
     protected $casts = [
