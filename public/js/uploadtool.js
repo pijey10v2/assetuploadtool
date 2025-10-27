@@ -112,7 +112,19 @@ $(document).ready(function () {
                     </div>
                 `);
 
-                renderMappingTable(response.db_columns, response.raw_columns);
+                // Normalize recent_mapping array to object
+                let recentMapping = {};
+                if (Array.isArray(response.recent_mapping)) {
+                    response.recent_mapping.forEach(item => {
+                        const key = Object.keys(item)[0];
+                        const value = item[key];
+                        recentMapping[key] = value;
+                    });
+                } else {
+                    recentMapping = response.recent_mapping || {};
+                }
+
+                renderMappingTable(response.db_columns, response.raw_columns, recentMapping);
                 $('#execute-update').prop('disabled', false);
                 $('#processBtn').prop('disabled', false).text('Process Again');
                 $(form).removeClass('was-validated');
@@ -140,7 +152,7 @@ $(document).ready(function () {
      *   MAPPING TABLE RENDER
      * =============================
      */
-    function renderMappingTable(dbCols, excelCols) {
+    function renderMappingTable(dbCols, excelCols, recentMapping = {}) {
         const tbody = $('#mapping-table tbody');
         tbody.empty();
 
@@ -154,43 +166,53 @@ $(document).ready(function () {
         }
 
         dbCols.forEach(dbCol => {
+            // Check if column is locked (for c_model_element)
+            const isLocked = dbCol === 'c_model_element';
+            const defaultValue = isLocked ? 'Element ID' : '';
 
-            // Special case: Auto-lock "c_model_element"
-            let isLocked = dbCol === 'c_model_element';
-            let defaultValue = isLocked ? 'Element ID' : '';
+            // Determine pre-selected value from recent mapping
+            const mappedExcelCol = recentMapping[dbCol] || (isLocked ? defaultValue : '');
 
-            // Filter out "Element ID" from all other dropdowns
+            // Filter out "Element ID" from other dropdowns
             const availableOptions = isLocked 
                 ? excelCols 
                 : excelCols.filter(col => col !== 'Element ID');
 
-            let options = availableOptions
-            .map(col => `<option value="${col}">${col}</option>`)
-            .join('');
+            // Generate options (keep preselected if it exists)
+            const options = availableOptions
+                .map(col => `
+                    <option value="${col}" ${col === mappedExcelCol ? 'selected' : ''}>${col}</option>
+                `)
+                .join('');
 
+            // Add table row
             tbody.append(`
-                <tr>
+                <tr ${isLocked ? 'class="table-light"' : ''}>
                     <td>
-                        <input type="text" class="form-control db-col-input" 
+                        <input type="text" class="form-control db-col-input"
                             value="${dbCol}" readonly>
                     </td>
                     <td>
-                        <select class="form-select excel-column-select" 
+                        <select class="form-select excel-column-select"
                                 data-dbcol="${dbCol}" ${isLocked ? 'disabled' : ''}>
                             <option value="">-- Select Excel Column --</option>
                             ${options}
                         </select>
-                        ${isLocked ? `<input type="hidden" name="locked_mapping_${dbCol}" value="${defaultValue}">` : ''}
+                        ${isLocked ? `
+                            <input type="hidden" name="locked_mapping_${dbCol}" value="${defaultValue}">
+                            <small class="text-muted">Auto-mapped to "${defaultValue}"</small>
+                        ` : ''}
                     </td>
                 </tr>
             `);
         });
 
-        // Automatically select "Element ID" for c_model_element
-        const lockedSelect = $('select[data-dbcol="c_model_element"]');
-        if (lockedSelect.length) {
-            lockedSelect.val('Element ID').trigger('change'); // sets visible text
-        }
+        // Initialize Select2 (reset any existing instances first)
+        $('.excel-column-select').each(function () {
+            if ($(this).data('select2')) {
+                $(this).select2('destroy');
+            }
+        });
 
         $('.excel-column-select').select2({
             placeholder: 'Search Excel Column...',

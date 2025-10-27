@@ -20,6 +20,21 @@
     tr:has(select[disabled]) {
         background-color: #f8f9fa;
     }
+
+    /* Make "Auto-mapped" Rows Visually Distinct */
+    tr.table-light {
+        background-color: #f8f9fa !important;
+    }
+
+    tr.table-light td {
+        opacity: 0.9;
+    }
+
+    .table-light small.text-muted {
+        display: block;
+        font-size: 0.8rem;
+    }
+
 </style>
 
 @section('content')

@@ -12,6 +12,7 @@ use App\Models\ProjectLayer;
 use App\Jobs\ProcessExcelInsertJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use App\Models\RecentMapping;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -124,6 +125,11 @@ class UploadToolController extends Controller
             'mode' => 'get_excel_columns'
         ])->json();
 
+        // Save recent mapping (by createdBy + table name)
+        $recentMapping = RecentMapping::where('createdBy', Auth::user()->email)
+        ->where('asset_table_name', $request->asset_table_name) 
+        ->first();
+
         return response()->json([
             'message' => 'Files processed successfully.',
             'bim_count' => count($bimResults),
@@ -132,7 +138,8 @@ class UploadToolController extends Controller
             'raw_columns' => $excelResponse['columns'] ?? [],
             'rawfile_mapping' => $rawfile_mapping,
             'rawfile_path' => $rawPath, // Make sure this exists
-            'raw_filename' => $rawFileName
+            'raw_filename' => $rawFileName,
+            'recent_mapping' => $recentMapping ? $recentMapping->mappings : null, // include previous mapping
         ]);
     }
 
@@ -160,6 +167,18 @@ class UploadToolController extends Controller
 
         // Get current user
         $user = Auth::user();
+
+        // Save or update recent mapping (by createdBy + table name)
+        RecentMapping::updateOrCreate(
+            [
+                'createdBy' => $user->email,
+                'asset_table_name' => $request->asset_table_name,
+            ],
+            [
+                'createdByName' => $user->name,
+                'mappings' => $request->mappings,
+            ]
+        );
 
         // Dispatch background job
         ProcessExcelInsertJob::dispatch(
