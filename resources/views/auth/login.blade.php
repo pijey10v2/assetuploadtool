@@ -52,9 +52,9 @@
             </div>
 
             <div class="text-center small">
-                <a href="{{ route('password.request') }}" class="text-decoration-none text-secondary">
+                <!-- <a href="{{ route('password.request') }}" class="text-decoration-none text-secondary">
                     Forgot your password?
-                </a>
+                </a> -->
                 <br>
                 <span class="text-muted">Don't have an account?</span>
                 <a href="{{ route('register') }}" class="fw-semibold text-primary text-decoration-none">Register</a>
