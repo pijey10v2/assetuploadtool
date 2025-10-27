@@ -189,6 +189,67 @@ Make sure that the extensions for sqlite is enabled at php.ini file
 extension=pdo_sqlite  
 extension=sqlite3  
 
+# ✅ 1️⃣ Add a Binding in IIS
+
+Open IIS Manager (inetmgr from Run dialog).
+
+In the left Connections pane, expand your server and click your Laravel site (e.g., “AssetUploadTool”).
+
+In the Actions pane (right side), click “Bindings…”
+
+In the Site Bindings window, click Add…
+
+Fill it out like this:
+
+Type: http
+
+IP address: All Unassigned (or your server’s IP)
+
+Port: 80
+
+Hostname: dg.asset.tool
+
+Click OK, then Close.
+
+✅ What this does:
+This tells IIS to respond to http://dg.asset.tool requests and route them to your Laravel app folder.
+
+# ✅ 2️⃣ Edit Your Local Hosts File
+
+You need to tell Windows where to find dg.asset.tool since it’s not a real domain.
+
+Open Notepad as Administrator.
+
+Open the file:
+
+C:\Windows\System32\drivers\etc\hosts
+
+Add this line at the bottom:
+
+127.0.0.1    dg.asset.tool
+
+Save the file.
+
+✅ Now you can open:
+👉 http://dg.asset.tool
+…and it will load your Laravel app hosted in IIS.
+
+# ✅ 3️⃣ Configure Laravel’s APP_URL
+
+Open your Laravel project’s .env file and update:
+
+APP_URL=http://dg.asset.tool
+
+Then clear the configuration cache:
+
+php artisan config:clear
+
+or in PowerShell:
+
+php artisan config:clear
+
+Laravel uses APP_URL for things like redirects, asset URLs, and email links.
+
 # 👨‍💻 Author
 
 Paolo Jon B. Caraig  
@@ -197,7 +258,7 @@ Paolo Jon B. Caraig
 
 # 🏁 License
 
-This project is proprietary and intended for internal use within Reveron Consulting.  
+This project is proprietary and intended for internal use within Reveron Consulting/Digile.  
 All rights reserved © 2025
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>

@@ -20,7 +20,8 @@ use App\Http\Controllers\UploadToolController;
 //     return view('welcome');
 // });
 Route::get('/', function () {
-    return auth()->check() ? redirect('/dashboard') : view('welcome');
+    //return auth()->check() ? redirect('/dashboard') : view('welcome');
+    return redirect('/login');
 });
 
 // Protected dashboard route (only for logged-in users)
