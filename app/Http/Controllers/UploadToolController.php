@@ -13,6 +13,7 @@ use App\Jobs\ProcessExcelInsertJob;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Models\AssetMapping;
+use Illuminate\Support\Facades\DB;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -180,6 +181,38 @@ class UploadToolController extends Controller
             ]
         );
 
+        // Retrieve project-related metadata from SQL Server
+        $projectData = null;
+
+        try {
+            // Query Project_Layers table to get Project_ID
+            $layer = DB::table('Project_Layers')
+                ->select('Data_ID', 'Project_ID')
+                ->where('Data_ID', $request->data_id)
+                ->first();
+
+            if ($layer) {
+                // Use the retrieved Project_ID to get details from the projects table
+                $project = DB::table('projects')
+                    ->select('project_id', 'project_id_number', 'parent_project_id_no', 'project_owner')
+                    ->where('project_id_number', $layer->Project_ID)
+                    ->first();
+
+                if ($project) {
+                    // Build derived mapping
+                    $projectData = [
+                        'c_package_id'   => $project->project_id,
+                        'c_package_uuid' => $project->project_id_number . '_' . $project->project_id . '_' . $project->project_id_number,
+                        'c_project_id'   => $project->parent_project_id_no,
+                        'c_project_owner'=> $project->project_owner,
+                    ];
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error fetching project data: ' . $e->getMessage());
+            $projectData = null;
+        }
+
         // Dispatch background job
         ProcessExcelInsertJob::dispatch(
             $jobId, 
@@ -191,6 +224,7 @@ class UploadToolController extends Controller
             $request->bim_results,
             $user->email,     // createdBy
             $user->name       // createdByName
+            , $projectData
         );
 
         return response()->json([
@@ -204,6 +238,7 @@ class UploadToolController extends Controller
             'mappings' => $request->mappings,
             'createdBy' => $user->email,
             'createdByName' => $user->name,
+            'project_data' => $projectData,
         ]);
     }
 
