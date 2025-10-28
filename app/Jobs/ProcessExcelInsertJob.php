@@ -83,6 +83,16 @@ class ProcessExcelInsertJob implements ShouldQueue
                     $mapped[$dbCol] = $colIndex !== false ? $row[$colIndex] ?? null : null;
                 }
 
+                // Append project data (if available)
+                if (!empty($this->projectData)) {
+                    $mapped = array_merge($mapped, [
+                        'c_package_id'    => $this->projectData['c_package_id'] ?? null,
+                        'c_package_uuid'  => $this->projectData['c_package_uuid'] ?? null,
+                        'c_project_id'    => $this->projectData['c_project_id'] ?? null,
+                        'c_project_owner' => $this->projectData['c_project_owner'] ?? null,
+                    ]);
+                }
+
                 $response = Http::asForm()->post($apiUrl, [
                     'mode' => 'insert_asset_data',
                     'import_batch_no' => $this->importBatchNo,
@@ -92,7 +102,6 @@ class ProcessExcelInsertJob implements ShouldQueue
                     'bim_results' => json_encode($this->bimResults),
                     'createdBy' => $this->createdBy ?? 'system@localhost',           // Email
                     'createdByName' => $this->createdByName ?? 'System Job',   // Name
-                    'projectData' => json_encode($this->projectData),
                 ]);
 
                 if ($response->successful()) {
