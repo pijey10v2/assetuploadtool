@@ -202,7 +202,7 @@ class UploadToolController extends Controller
 
                     // Get parent project info (optional if exists)
                     $parent = DB::table('projects')
-                        ->select('project_id_number')
+                        ->select('project_id_number', 'project_id')
                         ->where('project_id_number', $project->parent_project_id_number)
                         ->first();
 
@@ -210,7 +210,7 @@ class UploadToolController extends Controller
                     $projectData = [
                         'c_package_id'    => $project->project_id ?? null,
                         'c_package_uuid'  => ($project->project_id_number ?? '') . '_' . ($project->project_id ?? '') . '_' . ($project->project_id_number ?? ''),
-                        'c_project_id'    => $parent->project_id_number ?? null,
+                        'c_project_id'    => $parent->project_id ?? null,
                         'c_project_owner' => $project->project_owner ?? null,
                     ];
                 }
