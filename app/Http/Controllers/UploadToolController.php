@@ -193,18 +193,27 @@ class UploadToolController extends Controller
 
             if ($layer) {
                 // Use the retrieved Project_ID to get details from the projects table
-                $project = DB::table('projects')
-                    ->select('project_id', 'project_id_number', 'parent_project_id_number', 'project_owner')
-                    ->where('project_id_number', $layer->Project_ID)
-                    ->first();
+                $sql = "
+                    SELECT 
+                        c.project_id AS c_package_id,
+                        CONCAT(c.project_id_number, '_', c.project_id, '_', c.project_id_number) AS c_package_uuid,
+                        p.project_id_number AS c_project_id,
+                        c.project_owner AS c_project_owner
+                    FROM projects c
+                    LEFT JOIN projects p 
+                        ON c.parent_project_id_number = p.project_id_number
+                    WHERE c.project_id = ?
+                ";
 
-                if ($project) {
-                    // Build derived mapping
+                $result = DB::select($sql, [$layer->Project_ID]);
+
+                if (!empty($result)) {
+                    $row = $result[0];
                     $projectData = [
-                        'c_package_id'   => $project->project_id,
-                        'c_package_uuid' => $project->project_id_number . '_' . $project->project_id . '_' . $project->project_id_number,
-                        'c_project_id'   => $project->parent_project_id_number,
-                        'c_project_owner'=> $project->project_owner,
+                        'c_package_id'    => $row->c_package_id ?? null,
+                        'c_package_uuid'  => $row->c_package_uuid ?? null,
+                        'c_project_id'    => $row->c_project_id ?? null,
+                        'c_project_owner' => $row->c_project_owner ?? null,
                     ];
                 }
             }
