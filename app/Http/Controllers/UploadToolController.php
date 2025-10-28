@@ -194,7 +194,7 @@ class UploadToolController extends Controller
             if ($layer) {
                 // Use the retrieved Project_ID to get details from the projects table
                 $project = DB::table('projects')
-                    ->select('project_id', 'project_id_number', 'parent_project_id_no', 'project_owner')
+                    ->select('project_id', 'project_id_number', 'parent_project_id_number', 'project_owner')
                     ->where('project_id_number', $layer->Project_ID)
                     ->first();
 
@@ -203,7 +203,7 @@ class UploadToolController extends Controller
                     $projectData = [
                         'c_package_id'   => $project->project_id,
                         'c_package_uuid' => $project->project_id_number . '_' . $project->project_id . '_' . $project->project_id_number,
-                        'c_project_id'   => $project->parent_project_id_no,
+                        'c_project_id'   => $project->parent_project_id_number,
                         'c_project_owner'=> $project->project_owner,
                     ];
                 }
