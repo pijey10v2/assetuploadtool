@@ -34,11 +34,27 @@ $(document).ready(function () {
             const response = await fetch(window.uploadToolConfig.api.getAllTables);
             const data = await response.json();
 
+            console.log('API Response:', data); 
+
             if (data.status === "success" && Array.isArray(data.tables)) {
                 dropdown.html('<option value="" selected disabled>Select a table</option>');
-                data.tables.forEach(table => {
-                    dropdown.append(new Option(table, table));
+
+                data.tables.forEach(item => {
+                    // Defensive extraction
+                    const label = item.label ?? item.table ?? 'Unnamed Table';
+                    const value = item.table ?? item.label ?? '';
+
+                    dropdown.append(`<option value="${value}">${label}</option>`);
                 });
+
+                // Enhance dropdown with Select2
+                if ($.fn.select2) {
+                    dropdown.select2({
+                        placeholder: 'Search Asset Table...',
+                        allowClear: true,
+                        width: '100%'
+                    });
+                }
             } else {
                 dropdown.html('<option disabled>Error loading tables</option>');
                 console.error("Error:", data.message);
