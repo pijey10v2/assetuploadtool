@@ -46,7 +46,7 @@ class UploadToolController extends Controller
         $request->validate([
             // 'bimfile' => 'required|file|mimes:bim,sqlite,sqlite3,db|max:51200',
             'bimfile' => 'required|string',
-            'rawfile' => 'required|file|mimes:xlsx,xls,csv|max:51200',
+            'rawfile' => 'required|file|mimes:xlsx,xls|max:51200',
             'import_batch_no' => 'required|string',
             'data_id' => 'required|string',
         ]);

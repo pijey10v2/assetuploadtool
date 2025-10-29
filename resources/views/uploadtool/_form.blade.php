@@ -31,8 +31,8 @@
         <div class="mb-3">
             <label for="rawfile" class="form-label">RAW File <span class="text-danger">*</span></label>
             <input class="form-control" type="file" id="rawfile" name="rawfile"
-                accept=".xlsx,.xls,.csv" required>
-            <div class="invalid-feedback">Please select a valid Excel file (.xlsx / .xls / .csv).</div>
+                accept=".xlsx,.xls" required>
+            <div class="invalid-feedback">Please select a valid Excel file (.xlsx / .xls).</div>
         </div>
 
         <!-- Import Batch No -->
