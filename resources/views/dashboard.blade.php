@@ -5,7 +5,7 @@
     <div class="row mb-4">
         <div class="col">
             <!-- <h2 class="fw-bold text-primary mb-1">Dashboard</h2> -->
-            <h2 class="fw-bold text-primary mb-1">Welcome back, {{ Auth::user()->name }} 👋</h2>
+            <h2 class="fw-bold text-primary mb-1">Welcome, {{ Auth::user()->name }} 👋</h2>
         </div>
     </div>
 
@@ -14,7 +14,7 @@
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
-                    <h6 class="text-uppercase text-muted mb-1">BIM Files</h6>
+                    <h6 class="text-muted mb-1">Uploaded i.BIM Files</h6>
                     <h3 class="fw-bold text-primary">{{ $summary['bimCount'] }}</h3>
                     <small class="text-muted">in directory \storage\app\bimfiles</small>
                 </div>
@@ -24,7 +24,7 @@
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
-                    <h6 class="text-uppercase text-muted mb-1">Uploaded Excel Files</h6>
+                    <h6 class="text-muted mb-1">Uploaded Excel Files</h6>
                     <h3 class="fw-bold text-success">{{ $summary['excelCount'] }}</h3>
                     <small class="text-muted">total processed (in directory \storage\app\uploads)</small>
                 </div>
@@ -34,7 +34,7 @@
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
                 <div class="card-body text-center">
-                    <h6 class="text-uppercase text-muted mb-1">Last Upload</h6>
+                    <h6 class="text-muted mb-1">Last Upload</h6>
                     <h3 class="fw-bold text-warning">{{ $summary['lastUpload'] }}</h3>
                     <small class="text-muted">most recent Excel</small>
                 </div>
@@ -57,7 +57,7 @@
         <div class="col-lg-6">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white fw-bold">
-                    <i class="bi bi-box-seam me-2 text-primary"></i> BIM Files
+                    <i class="bi bi-box-seam me-2 text-primary"></i> i.BIM Files
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">

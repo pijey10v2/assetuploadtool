@@ -5,7 +5,7 @@
     <div class="card shadow-lg p-4" style="max-width: 420px; width: 100%; border-radius: 1rem;">
         <div class="text-center mb-4">
             <img src="{{ asset('images/asset.png') }}" alt="App Logo" width="80" class="mb-3">
-            <h3 class="fw-bold text-primary">Welcome Back</h3>
+            <h3 class="fw-bold text-primary">Welcome</h3>
             <p class="text-muted mb-0">Login to continue to <strong>{{ config('app.name') }}</strong></p>
         </div>
 
