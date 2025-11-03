@@ -15,16 +15,16 @@
     <form id="uploadForm" class="needs-validation" novalidate enctype="multipart/form-data">
         @csrf
 
-        <!-- BIM File -->
+        <!-- i.BIM File -->
         <div class="mb-3">
-            <label for="bimfile" class="form-label">Select BIM File <span class="text-danger">*</span></label>
+            <label for="bimfile" class="form-label">Select i.BIM File <span class="text-danger">*</span></label>
             <select class="form-select" id="bimfile" name="bimfile" required>
-                <option value="">Select BIM File...</option>
+                <option value="">Select i.BIM File...</option>
                 @foreach($bimFiles as $file)
                     <option value="{{ $file }}">{{ $file }}</option>
                 @endforeach
             </select>
-            <div class="invalid-feedback">Please select a BIM file.</div>
+            <div class="invalid-feedback">Please select a i.BIM file.</div>
         </div>
 
         <!-- RAW File -->
