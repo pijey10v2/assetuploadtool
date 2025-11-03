@@ -95,6 +95,9 @@ $(document).ready(function () {
             data: formData,
             processData: false,
             contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
             beforeSend: function () {
                 $('#progress-container').show();
                 $('#progress-bar')
