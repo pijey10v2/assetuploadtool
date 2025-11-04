@@ -96,7 +96,7 @@ $(document).ready(function () {
             processData: false,
             contentType: false,
             headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Add CSRF header
             },
             beforeSend: function () {
                 $('#progress-container').show();
@@ -109,9 +109,14 @@ $(document).ready(function () {
             },
             success: function (response) {
 
+                if (response.import_batch_no) {
+                    $('#import_batch_no').val(response.import_batch_no);
+                    window.importBatchNo = response.import_batch_no;
+                }
+
                 // Save these globally for Execute step
                 window.rawFilePath = response.rawfile_path;
-                window.importBatchNo = $('#import_batch_no').val();
+                // window.importBatchNo = $('#import_batch_no').val();
                 window.dataId = $('#data_id').val();
                 window.assetTableName = $('#asset_table_name').val();
                 window.excelColumns = response.raw_columns || [];
@@ -127,9 +132,14 @@ $(document).ready(function () {
                 $('#upload-status').html(`
                     <div class="alert alert-success mt-3">
                         ${response.message}<br>
-                        BIM Rows Found: <strong>${response.bim_count}</strong>
+                        BIM Rows Found: <strong>${response.bim_count}</strong><br>
+                        Generated Import Batch No:<br>
+                        <strong><code>${response.import_batch_no}</code></strong>
                     </div>
                 `);
+
+                // Fill the field with the new batch number
+                $('#import_batch_no').val(response.import_batch_no);
 
                 // Normalize recent_mapping array to object
                 let recentMapping = {};
@@ -146,6 +156,16 @@ $(document).ready(function () {
                 renderMappingTable(response.db_columns, response.raw_columns, recentMapping);
                 $('#execute-update').prop('disabled', false);
                 $('#processBtn').prop('disabled', false).text('Process Again');
+                // Reset import batch number when clicking "Process Again"
+                $(document).on('click', '#processBtn', function() {
+                    if ($(this).text().includes('Again')) {
+                        console.log('Resetting import batch number...');
+                        
+                        // Clear the field and global variable
+                        $('#import_batch_no').val('');
+                        window.importBatchNo = null;
+                    }
+                });
                 $(form).removeClass('was-validated');
             },
             error: function (xhr, status, error) {
@@ -286,6 +306,9 @@ $(document).ready(function () {
         $.ajax({
             url: window.uploadToolConfig.routes.execute,
             type: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Add CSRF header
+            },
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content'),
                 mappings: mappings,
@@ -332,7 +355,8 @@ $(document).ready(function () {
                         status.html(`
                             <div class="alert alert-success mt-3 text-center">
                                 <strong>Data Successfully Processed and Updated!</strong><br>
-                                Inserted: ${data.inserted} / ${data.total} rows
+                                Inserted: ${data.inserted} / ${data.total} rows<br>
+                                <small class="text-muted">Import Batch No: ${window.importBatchNo}</small>
                             </div>
                         `);
                         button.prop('disabled', false).html('<i class="bi bi-play-circle me-1"></i> Execute Data Update');

@@ -35,14 +35,6 @@
             <div class="invalid-feedback">Please select a valid Excel file (.xlsx / .xls).</div>
         </div>
 
-        <!-- Import Batch No -->
-        <div class="mb-3">
-            <label for="import_batch_no" class="form-label">Import Batch No <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="import_batch_no" name="import_batch_no"
-                placeholder="Enter import batch number" required>
-            <div class="invalid-feedback">Please enter an import batch number.</div>
-        </div>
-
         <!-- Data ID -->
         <div class="mb-3">
             <label for="data_id" class="form-label">Select Data ID (Layer Name) <span class="text-danger">*</span></label>
@@ -62,6 +54,13 @@
                 <option selected disabled><span class="spinner-border spinner-border-sm"></span> Loading...</option>
             </select>
             <div class="invalid-feedback">Please select an asset table.</div>
+        </div>
+
+        <!-- Import Batch No -->
+        <div class="mb-3">
+            <label for="import_batch_no" class="form-label">Import Batch No</label>
+            <input type="text" class="form-control" id="import_batch_no" name="import_batch_no"
+           placeholder="Auto-generated after clicking process button..." readonly>
         </div>
 
         <!-- Submit -->

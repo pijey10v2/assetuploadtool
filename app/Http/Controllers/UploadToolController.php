@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use App\Models\AssetMapping;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 ini_set('memory_limit', '1024M'); // Increase memory
 set_time_limit(0); // Disable script timeout
@@ -47,9 +49,15 @@ class UploadToolController extends Controller
             // 'bimfile' => 'required|file|mimes:bim,sqlite,sqlite3,db|max:51200',
             'bimfile' => 'required|string',
             'rawfile' => 'required|file|mimes:xlsx,xls|max:51200',
-            'import_batch_no' => 'required|string',
+            'import_batch_no' => 'nullable|string',
             'data_id' => 'required|string',
         ]);
+
+        // Generate batch number if missing
+        if (empty($request->import_batch_no)) {
+            $autoBatchNo = $this->makeImportBatchNo($request->asset_table_name);
+            $request->merge(['import_batch_no' => $autoBatchNo]);
+        }
 
         $rawOriginalName = pathinfo($request->file('rawfile')->getClientOriginalName(), PATHINFO_FILENAME);
         $rawExtension = $request->file('rawfile')->getClientOriginalExtension();
@@ -141,6 +149,7 @@ class UploadToolController extends Controller
             'rawfile_path' => $rawPath, // Make sure this exists
             'raw_filename' => $rawFileName,
             'recent_mapping' => $recentMapping ? $recentMapping->mappings : null, // include previous mapping
+            'import_batch_no' => $request->import_batch_no,
         ]);
     }
 
@@ -258,6 +267,33 @@ class UploadToolController extends Controller
         ]);
 
         return response()->json($progress);
+    }
+
+    private function makeImportBatchNo($assetTableName)
+    {
+        $counter = \DB::table('asset_batch_counters')
+            ->where('asset_table_name', $assetTableName)
+            ->lockForUpdate()
+            ->first();
+
+        if ($counter) {
+            $next = $counter->counter + 1;
+            \DB::table('asset_batch_counters')
+                ->where('asset_table_name', $assetTableName)
+                ->update(['counter' => $next]);
+        } else {
+            $next = 1;
+            \DB::table('asset_batch_counters')->insert([
+                'asset_table_name' => $assetTableName,
+                'counter' => $next,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $batchNo = sprintf('%s-%s-%04d', $assetTableName, now()->format('Ymd'), $next);
+
+        return $batchNo; // return string (e.g. app_fd_inv_pavement-20251104-0001)
     }
 
 }
