@@ -4,7 +4,6 @@
 <div class="container py-4">
     <div class="row mb-4">
         <div class="col">
-            <!-- <h2 class="fw-bold text-primary mb-1">Dashboard</h2> -->
             <h2 class="fw-bold text-primary mb-1">Welcome, {{ Auth::user()->name }} 👋</h2>
         </div>
     </div>
@@ -16,7 +15,7 @@
                 <div class="card-body text-center">
                     <h6 class="text-muted mb-1">Uploaded i.BIM Files</h6>
                     <h3 class="fw-bold text-primary">{{ $summary['bimCount'] }}</h3>
-                    <small class="text-muted">in directory \storage\app\bimfiles</small>
+                    <small class="text-muted">total uploaded (in directory \storage\app\bimfiles)</small>
                 </div>
             </div>
         </div>
@@ -40,16 +39,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- <div class="col-md-3">
-            <div class="card shadow-sm border-0">
-                <div class="card-body text-center">
-                    <h6 class="text-uppercase text-muted mb-1">Pending Tasks</h6>
-                    <h3 class="fw-bold text-danger">{{ $summary['pendingTasks'] }}</h3>
-                    <small class="text-muted">to review</small>
-                </div>
-            </div>
-        </div> -->
     </div>
 
     <!-- File Tables -->
@@ -57,32 +46,15 @@
         <div class="col-lg-6">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white fw-bold">
-                    <i class="bi bi-box-seam me-2 text-primary"></i> i.BIM Files
+                    <i class="bi bi-box-seam me-2 text-primary"></i>Uploaded i.BIM Files
                 </div>
                 <div class="card-body p-0">
+                    <input type="text" id="search-bim" class="form-control mb-2" placeholder="Search i.BIM Files...">
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-sm table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>File Name</th>
-                                    <th>Size (KB)</th>
-                                    <th style="width: 250px;">Modified</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($bimFiles as $file)
-                                    <tr>
-                                        <td>{{ $file['name'] }}</td>
-                                        <td>{{ $file['size'] }}</td>
-                                        <td>{{ $file['modified_exact'] }} <small class="text-muted">({{ $file['modified_human'] }})</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">No BIM files found.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <div id="bim-file-list" class="list-group">
+                        <div class="text-center text-muted">Loading files...</div>
+                    </div>
+                    <button id="load-more-bim" class="btn btn-outline-primary btn-sm mt-3 d-none">Load More</button>
                     </div>
                 </div>
             </div>
@@ -90,37 +62,25 @@
 
         <div class="col-lg-6">
             <div class="card shadow-sm border-0">
-                <div class="card-header bg-white fw-bold">
-                    <i class="bi bi-file-earmark-excel me-2 text-success"></i> Uploaded Excel Files
+                <div class="card-header bg-white fw-bold">  
+                    <i class="bi bi-file-earmark-excel me-2 text-success"></i>Uploaded Excel Files
                 </div>
                 <div class="card-body p-0">
+                    <input type="text" id="search-excel" class="form-control mb-2" placeholder="Search Excel files...">
                     <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
-                        <table class="table table-sm table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>File Name</th>
-                                    <th>Size (KB)</th>
-                                    <th style="width: 250px;">Modified</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($excelFiles as $file)
-                                    <tr>
-                                        <td>{{ $file['name'] }}</td>
-                                        <td>{{ $file['size'] }}</td>
-                                        <td>{{ $file['modified_exact'] }} <small class="text-muted">({{ $file['modified_human'] }})</small></td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="3" class="text-center text-muted">No Excel files found.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                        <div id="excel-file-list" class="list-group">
+                        <div class="text-center text-muted">Loading files...</div>
                     </div>
+                    <button id="load-more-excel" class="btn btn-outline-primary btn-sm mt-3 d-none">Load More</button>
+                </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ asset('js/dashboard.js') }}"></script>
+@endpush
