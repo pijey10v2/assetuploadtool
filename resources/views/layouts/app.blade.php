@@ -80,6 +80,33 @@
             cursor: pointer;
         }
 
+        #scroll-buttons {
+            position: fixed;
+            right: 25px;
+            bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1050;
+        }
+
+        #scroll-buttons button {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: none; /* Initially hidden */
+            transition: opacity 0.3s ease;
+        }
+
+        #scroll-buttons button.show {
+            display: inline-block;
+            opacity: 1;
+        }
+
+        #scroll-buttons button:hover {
+            opacity: 0.85;
+        }
+
     </style>
     <!-- End - Assets for Upload Tool -->
 </head>
@@ -159,7 +186,45 @@
         </main>
     </div>
 
+    <!-- Floating Scroll Buttons -->
+    <div id="scroll-buttons">
+        <button id="goTopBtn" class="btn btn-primary shadow-sm rounded-circle" data-bs-toggle="tooltip" data-bs-placement="left" title="Go to Top">
+            <i class="bi bi-arrow-up"></i>
+        </button>
+        <button id="goBottomBtn" class="btn btn-secondary shadow-sm rounded-circle" data-bs-toggle="tooltip" data-bs-placement="left" title="Go to Bottom">
+            <i class="bi bi-arrow-down"></i>
+        </button>
+    </div>
+
     <!-- This ensures the <script> inside @push('scripts') in your Blade is actually loaded. -->
     @stack('scripts')
+
+    <script>
+        $(document).ready(function() {
+            const goTopBtn = $('#goTopBtn');
+            const goBottomBtn = $('#goBottomBtn');
+
+            // Show/hide buttons on scroll
+            $(window).on('scroll', function() {
+                if ($(this).scrollTop() > 300) {
+                    goTopBtn.addClass('show');
+                    goBottomBtn.addClass('show');
+                } else {
+                    goTopBtn.removeClass('show');
+                    goBottomBtn.removeClass('show');
+                }
+            });
+
+            // Scroll to top smoothly
+            goTopBtn.on('click', function() {
+                $('html, body').animate({ scrollTop: 0 }, 'slow');
+            });
+
+            // Scroll to bottom smoothly
+            goBottomBtn.on('click', function() {
+                $('html, body').animate({ scrollTop: $(document).height() }, 'slow');
+            });
+        });
+    </script>
 </body>
 </html>
