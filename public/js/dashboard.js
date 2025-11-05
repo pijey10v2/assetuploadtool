@@ -1,5 +1,7 @@
 $(document).ready(function() {
 
+    const routes = window.fileRoutes.routes;
+
     $('#search-bim').on('keyup', function () {
         const query = $(this).val().toLowerCase();
 
@@ -39,8 +41,16 @@ $(document).ready(function() {
 
         if (page === 1) $(container).html('<div class="text-center text-muted">Loading files...</div>');
 
+        let url = '';
+
+        if (type === 'bim') {
+            url = `${routes.listBimFiles}?page=${page}`;
+        } else if (type === 'excel') {
+            url = `${routes.listExcelFiles}?page=${page}`;
+        }
+
         $.ajax({
-            url: `/files/${type}?page=${page}`,
+            url: url,
             type: 'GET',
             success: function(response) {
                 if (response.status === 'success') {
@@ -80,6 +90,9 @@ $(document).ready(function() {
 });
 
 $(function () {
+
+    const routes = window.fileRoutes.routes;
+    
     function confirmAndClearFiles(url, listSelector, buttonSelector, fileType) {
         Swal.fire({
             title: `Clear all uploaded ${fileType}?`,
@@ -133,10 +146,10 @@ $(function () {
     }
 
     $('#clear-bim-files').on('click', function () {
-        confirmAndClearFiles(window.fileRoutes.clearBim, '#bim-file-list', '#clear-bim-files', 'i.BIM Files');
+        confirmAndClearFiles(routes.clearBim, '#bim-file-list', '#clear-bim-files', 'i.BIM Files');
     });
 
     $('#clear-excel-files').on('click', function () {
-        confirmAndClearFiles(window.fileRoutes.clearExcel, '#excel-file-list', '#clear-excel-files', 'Excel Files');
+        confirmAndClearFiles(routes.clearExcel, '#excel-file-list', '#clear-excel-files', 'Excel Files');
     });
 });

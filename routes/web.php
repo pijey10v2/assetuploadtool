@@ -39,6 +39,7 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
+    
     // Upload tool page
     Route::get('/uploadtool', [UploadToolController::class, 'index'])->name('uploadtool');
     // Upload tool form submission
@@ -47,14 +48,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/uploadtool/execute-update', [UploadToolController::class, 'executeUpdate'])->name('uploadtool.execute');
     // Upload tool progress update
     Route::get('/uploadtool/progress', [UploadToolController::class, 'getProgress'])->name('uploadtool.progress');
-    // Get i-BIM files list
-    Route::get('/files/bim', [FileBrowserController::class, 'getBimFiles'])->name('files.bim');
-    // Get Excel files list
-    Route::get('/files/excel', [FileBrowserController::class, 'getExcelFiles'])->name('files.excel');
-    // Dashboard page - Clear bim files
-    Route::delete('/files/clear-bim', [FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
-    // Dashboard page - Clear Excel files
-    Route::delete('/files/clear-excel', [FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
+
     // Upload i-BIM page
     Route::get('/bimupload', [BimUploadController::class, 'index'])->name('bimupload.index');
     // Upload i-BIM form submission
@@ -65,4 +59,15 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bimupload/clear-bim', [BimUploadController::class, 'clearSelectedBimFiles'])->name('bimupload.clearBimFiles');
     // Get i-BIM files list for BIM upload page
     Route::get('/bimupload/bim', [BimUploadController::class, 'listBimFiles'])->name('bimupload.listBim');
+
+    Route::prefix('files')->group(function () {
+        // Get i-BIM files list
+        Route::get('/bim', [FileBrowserController::class, 'getBimFiles'])->name('files.bim');
+        // Get Excel files list
+        Route::get('/excel', [FileBrowserController::class, 'getExcelFiles'])->name('files.excel');
+        // Dashboard page - Clear bim files
+        Route::delete('/clear-bim', [FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
+        // Dashboard page - Clear Excel files
+        Route::delete('/clear-excel', [FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
+    });
 });

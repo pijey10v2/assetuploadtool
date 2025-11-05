@@ -103,8 +103,13 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     window.fileRoutes = {
-        clearBim: "{{ route('files.clearBim') }}",
-        clearExcel: "{{ route('files.clearExcel') }}"
+        routes: {
+            listBimFiles: "{{ route('files.bim') }}",
+            listExcelFiles: "{{ route('files.excel') }}",
+            clearBim: "{{ route('files.clearBim') }}",
+            clearExcel: "{{ route('files.clearExcel') }}"
+        },
+        csrfToken: "{{ csrf_token() }}"
     };
 </script>
 <script src="{{ asset('js/dashboard.js') }}"></script>
