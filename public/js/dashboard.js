@@ -78,3 +78,65 @@ $(document).ready(function() {
         });
     }
 });
+
+$(function () {
+    function confirmAndClearFiles(url, listSelector, buttonSelector, fileType) {
+        Swal.fire({
+            title: `Clear all uploaded ${fileType}?`,
+            text: `This will permanently remove all uploaded ${fileType.toLowerCase()}.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, clear all',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $(buttonSelector)
+                    .prop('disabled', true)
+                    .html('<span class="spinner-border spinner-border-sm me-1"></span> Clearing...');
+
+                $.ajax({
+                    url: url,
+                    type: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            title: 'Cleared!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+
+                        $(listSelector).html(
+                            `<div class="text-muted text-center py-3">No ${fileType.toLowerCase()} available.</div>`
+                        );
+                    },
+                    error: function (xhr) {
+                        Swal.fire({
+                            title: 'Error',
+                            text: xhr.responseJSON?.message || `Failed to clear ${fileType}.`,
+                            icon: 'error'
+                        });
+                    },
+                    complete: function () {
+                        $(buttonSelector)
+                            .prop('disabled', false)
+                            .html(`<i class="bi bi-trash me-1"></i> Clear Uploaded ${fileType}`);
+                    }
+                });
+            }
+        });
+    }
+
+    $('#clear-bim-files').on('click', function () {
+        confirmAndClearFiles(window.fileRoutes.clearBim, '#bim-file-list', '#clear-bim-files', 'i.BIM Files');
+    });
+
+    $('#clear-excel-files').on('click', function () {
+        confirmAndClearFiles(window.fileRoutes.clearExcel, '#excel-file-list', '#clear-excel-files', 'Excel Files');
+    });
+});

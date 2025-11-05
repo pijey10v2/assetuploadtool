@@ -45,4 +45,31 @@ class FileBrowserController extends Controller
             'per_page' => $perPage,
         ]);
     }
+
+    public function clearBimFiles()
+    {
+        return $this->clearFilesInDirectory('bimfiles');
+    }
+
+    public function clearExcelFiles()
+    {
+        return $this->clearFilesInDirectory('uploads');
+    }
+
+    private function clearFilesInDirectory(string $directory)
+    {
+        if (!Storage::exists($directory)) {
+            return response()->json(['status' => 'error', 'message' => "Directory not found: {$directory}"], 404);
+        }
+
+        $files = Storage::files($directory);
+        if (empty($files)) {
+            return response()->json(['status' => 'info', 'message' => "No files found in {$directory}."]);
+        }
+
+        // Delete all files
+        Storage::delete($files);
+
+        return response()->json(['status' => 'success', 'message' => "All files in {$directory} have been cleared."]);
+    }
 }

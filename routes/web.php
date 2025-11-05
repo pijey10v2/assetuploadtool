@@ -50,4 +50,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/files/bim', [FileBrowserController::class, 'getBimFiles'])->name('files.bim');
     // Get Excel files list
     Route::get('/files/excel', [FileBrowserController::class, 'getExcelFiles'])->name('files.excel');
+    // File clearing routes
+    Route::delete('/files/clear-bim', [App\Http\Controllers\FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
+    Route::delete('/files/clear-excel', [App\Http\Controllers\FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
+
 });
