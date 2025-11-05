@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UploadToolController;
 use App\Http\Controllers\FileBrowserController;
+use App\Http\Controllers\BimUploadController;
 
 // Breeze provides built-in auth routes (login, register, etc.)
 require __DIR__.'/auth.php';
@@ -50,8 +51,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/files/bim', [FileBrowserController::class, 'getBimFiles'])->name('files.bim');
     // Get Excel files list
     Route::get('/files/excel', [FileBrowserController::class, 'getExcelFiles'])->name('files.excel');
-    // File clearing routes
-    Route::delete('/files/clear-bim', [App\Http\Controllers\FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
-    Route::delete('/files/clear-excel', [App\Http\Controllers\FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
-
+    // Dashboard page - Clear bim files
+    Route::delete('/files/clear-bim', [FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
+    // Dashboard page - Clear Excel files
+    Route::delete('/files/clear-excel', [FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
+    // Upload i-BIM page
+    Route::get('/bimupload', [BimUploadController::class, 'index'])->name('bimupload.index');
+    // Upload i-BIM form submission
+    Route::post('/bimupload', [BimUploadController::class, 'store'])->name('bimupload.store');
+    // Clear All i-BIM Files
+    Route::delete('/bimupload/clear', [BimUploadController::class, 'clearBim'])->name('bimupload.clearBim');
+    // Clear selected i-BIM file
+    Route::post('/bimupload/clear-bim', [BimUploadController::class, 'clearSelectedBimFiles'])->name('bimupload.clearBimFiles');
+    // Get i-BIM files list for BIM upload page
+    Route::get('/bimupload/bim', [BimUploadController::class, 'listBimFiles'])->name('bimupload.listBim');
 });

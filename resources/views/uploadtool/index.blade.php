@@ -1,42 +1,5 @@
 @extends('layouts.app')
 
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<style>
-    /* Optional: Make it fit Bootstrap's form style */
-    .select2-container .select2-selection--single {
-        height: 38px;
-        border: 1px solid #ced4da;
-        border-radius: 0.375rem;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 36px;
-    }
-
-    #execute-loading-container {
-        transition: opacity 0.3s ease-in-out;
-    }
-
-    /* Highlight locked mapping rows */
-    tr:has(select[disabled]) {
-        background-color: #f8f9fa;
-    }
-
-    /* Make "Auto-mapped" Rows Visually Distinct */
-    tr.table-light {
-        background-color: #f8f9fa !important;
-    }
-
-    tr.table-light td {
-        opacity: 0.9;
-    }
-
-    .table-light small.text-muted {
-        display: block;
-        font-size: 0.8rem;
-    }
-
-</style>
-
 @section('content')
 <div class="container mt-5">
     <div class="row g-4 align-items-start">
@@ -56,6 +19,8 @@
 @endsection
 
 @push('scripts')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         window.uploadToolConfig = {
             routes: {
@@ -68,8 +33,5 @@
             }
         };
     </script>
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/uploadtool.js') }}"></script>
 @endpush
