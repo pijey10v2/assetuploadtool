@@ -1,5 +1,5 @@
 <div class="d-flex justify-content-center">
-    <form id="bimUploadForm" class="w-50" enctype="multipart/form-data">
+    <form id="bimUploadForm" class="w-30" enctype="multipart/form-data">
         @csrf
         <div class="mb-3 text-center">
             <label for="bimfile" class="form-label fw-bold">Select i.BIM Files</label>
