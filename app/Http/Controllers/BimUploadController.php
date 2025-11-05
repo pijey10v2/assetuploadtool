@@ -62,7 +62,7 @@ class BimUploadController extends Controller
         $isEmpty = empty($remainingFiles);
 
          return response()->json([
-            'message' => "All BIM files cleared successfully.",
+            'message' => "All i.BIM files cleared successfully.",
             'remaining' => count($remainingFiles),
             'isEmpty' => $isEmpty
         ]);
