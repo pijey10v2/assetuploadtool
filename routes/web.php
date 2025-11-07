@@ -39,26 +39,30 @@ Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name
 
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
-    
-    // Upload tool page
-    Route::get('/uploadtool', [UploadToolController::class, 'index'])->name('uploadtool');
-    // Upload tool form submission
-    Route::post('/uploadtool', [UploadToolController::class, 'store'])->name('uploadtool.store');
-    // Upload tool execute update
-    Route::post('/uploadtool/execute-update', [UploadToolController::class, 'executeUpdate'])->name('uploadtool.execute');
-    // Upload tool progress update
-    Route::get('/uploadtool/progress', [UploadToolController::class, 'getProgress'])->name('uploadtool.progress');
 
-    // Upload i-BIM page
-    Route::get('/bimupload', [BimUploadController::class, 'index'])->name('bimupload.index');
-    // Upload i-BIM form submission
-    Route::post('/bimupload', [BimUploadController::class, 'store'])->name('bimupload.store');
-    // Clear All i-BIM Files
-    Route::delete('/bimupload/clear', [BimUploadController::class, 'clearBim'])->name('bimupload.clearBim');
-    // Clear selected i-BIM file
-    Route::post('/bimupload/clear-bim', [BimUploadController::class, 'clearSelectedBimFiles'])->name('bimupload.clearBimFiles');
-    // Get i-BIM files list for BIM upload page
-    Route::get('/bimupload/bim', [BimUploadController::class, 'listBimFiles'])->name('bimupload.listBim');
+    Route::prefix('uploadtool')->group(function () {
+        // Upload tool index page
+        Route::get('/', [UploadToolController::class, 'index'])->name('uploadtool');
+        // Upload tool form submission
+        Route::post('/', [UploadToolController::class, 'store'])->name('uploadtool.store');
+        // Upload tool execute update
+        Route::post('/execute-update', [UploadToolController::class, 'executeUpdate'])->name('uploadtool.execute');
+        // Upload tool progress update
+        Route::get('/progress', [UploadToolController::class, 'getProgress'])->name('uploadtool.progress');
+    });
+
+    Route::prefix('bimupload')->group(function () {
+        // Upload i-BIM page
+        Route::get('/', [BimUploadController::class, 'index'])->name('bimupload.index');
+        // Upload i-BIM form submission
+        Route::post('/', [BimUploadController::class, 'store'])->name('bimupload.store');
+        // Clear All i-BIM Files
+        Route::delete('/clear', [BimUploadController::class, 'clearBim'])->name('bimupload.clearBim');
+        // Clear selected i-BIM file
+        Route::post('/clear-bim', [BimUploadController::class, 'clearSelectedBimFiles'])->name('bimupload.clearBimFiles');
+        // Get i-BIM files list for BIM upload page
+        Route::get('/bim', [BimUploadController::class, 'listBimFiles'])->name('bimupload.listBim');
+    });
 
     Route::prefix('files')->group(function () {
         // Get i-BIM files list
