@@ -36,7 +36,7 @@ class BimUploadController extends Controller
         foreach ($request->file('bimfiles') as $file) {
             $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $timestamp = now()->format('Y-m-d_H-i-s');
-            $fileName = $originalName . '-' . $timestamp . '.' . $file->getClientOriginalExtension();
+            $fileName = $originalName . '.' . $file->getClientOriginalExtension();
 
             $path = $file->storeAs('bimfiles', $fileName);
             $uploadedFiles[] = [
