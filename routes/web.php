@@ -25,9 +25,7 @@ Route::get('/', function () {
     return redirect('/login');
 });
 
-Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth'])
-    ->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth'])->name('dashboard');
 
 // Custom logout route (optional, Breeze already includes /logout via POST)
 Route::post('/logout', function () {
