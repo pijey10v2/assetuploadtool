@@ -45,6 +45,10 @@ $(document).ready(function() {
 
                     const totalPages = Math.ceil(response.total / response.per_page);
                     $(loadMoreBtn).toggleClass('d-none', page >= totalPages);
+                    
+                    if (response.total === 0) {
+                        $(container).html('<tr><td colspan="4" class="text-center text-danger">No files found.</td></tr>');
+                    }
                 }
             },
             error: function() {
