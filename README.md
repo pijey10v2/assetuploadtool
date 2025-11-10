@@ -25,14 +25,16 @@ The tool provides data mapping, real-time progress updates, and automated data i
 
 # 📦 Installation Guide
 1️⃣ Clone the Repository
-
+```
 git clone https://github.com/pijey10v2/assetuploadtool.git
 cd assetuploadtool
+```
 
 2️⃣ Install PHP Dependencies
-
+```
 composer install
 
+```
 3️⃣ Set Up Environment File
 
 Copy .env.example and configure your database, cache, and queue drivers.  
@@ -40,40 +42,52 @@ Rename the file to .env and update the values as needed.
 
 Then open .env and configure these values:
 
+```
 APP_NAME="Asset Upload Tool"  
 APP_ENV=local  
 APP_DEBUG=true  
 APP_URL=http://localhost:8080/
+```
 
 # Database (SQL Server)
+```
 DB_CONNECTION=sqlsrv  
-DB_HOST=DT-PH-1016\SQLEXPRESS          
-DB_DATABASE=RI_Constructs_Assets_V4  
+DB_HOST=your_host          
+DB_DATABASE=your_db  
 DB_USERNAME=your_username  
 DB_PASSWORD=your_password  
+```
 
 # Cache / Queue
+```
 CACHE_DRIVER=file  
-QUEUE_CONNECTION=RI_Constructs_Assets_V4  
+QUEUE_CONNECTION=your_db  
+```
 
 # External API
+```
 JOGET_API_URL=https://ams.reveronconsulting.com/JavaBridge/asset/index.php
+```
 
 # External API (Get All Tables from Joget DB)
+```
 API_GET_ALL_TABLES_URL=${JOGET_API_URL}?mode=get_all_tables
+```
 
 # 🧰 Database Setup
 
 1️⃣ Run Migrations
-
+```
 php artisan migrate
+```
 
 2️⃣ (Optional) Add Queue Table
 
 If you use the database queue driver, run this migration:
-
+```
 php artisan queue:table  
 php artisan migrate
+```
 
 # 🧾 Application Setup
 
@@ -89,8 +103,9 @@ storage/app/bimfiles
 The app uses Laravel Jobs (e.g., ProcessExcelInsertJob) to insert data asynchronously and track progress.  
 
 To run the queue worker manually:  
-
+```
 php artisan queue:work
+```
 
 ✅ Tip:  
 You can also run it automatically when the server starts — add this to your Windows Task Scheduler or Supervisor configuration.  
@@ -127,7 +142,7 @@ Responsive Bootstrap layout for dashboard and upload page
 # 📊 Progress Tracking
 
 The backend uses Laravel’s Cache facade to store progress data for each job:  
-
+```
 Cache::put("upload_progress_{$jobId}", [  
     'status' => 'processing',  
     'processed' => $processed,  
@@ -135,11 +150,12 @@ Cache::put("upload_progress_{$jobId}", [
     'inserted' => $inserted,  
     'progress' => round(($processed / $totalRows) * 100)  
 ]);  
-
+```
 You can view cached progress in Tinker:  
-
+```
 php artisan tinker  
 Cache::get('upload_progress_upload_68f84412bb21c3.09257791');
+```
 
 Or if using the file cache driver:  
 
@@ -180,15 +196,15 @@ app/
 Additional:  
 
 Make sure that the extensions for sqlsrv is enabled at php.ini file
-
+```
 extension=php_sqlsrv_83_nts_x64.dll  
 extension=php_pdo_sqlsrv_83_nts_x64.dll  
-
+```
 Make sure that the extensions for sqlite is enabled at php.ini file
-
+```
 extension=pdo_sqlite  
 extension=sqlite3  
-
+```
 # ✅ 1️⃣ Add a Binding in IIS
 
 Open IIS Manager (inetmgr from Run dialog).
@@ -241,14 +257,28 @@ Open your Laravel project’s .env file and update:
 APP_URL=http://dg.asset.tool
 
 Then clear the configuration cache:
-
+```
 php artisan config:clear
-
+```
 or in PowerShell:
-
+```
 php artisan config:clear
-
+```
 Laravel uses APP_URL for things like redirects, asset URLs, and email links.
+
+# 🛠️ PHP Configuration
+
+Make sure your php.ini file is properly configured to handle large file uploads and longer request times.
+You can update the following settings in your php.ini file:
+```
+max_file_uploads = 100  
+upload_max_filesize = 5000M  
+post_max_size = 5000M  
+max_execution_time = 30  
+max_input_time = 60  
+```
+💡 Note:
+After updating your php.ini, restart your web server (e.g., IIS, Apache, Nginx, or PHP-FPM) to apply the changes.  
 
 # 👨‍💻 Author
 
@@ -260,65 +290,3 @@ Paolo Jon B. Caraig
 
 This project is proprietary and intended for internal use within Reveron Consulting/Digile.  
 All rights reserved © 2025
-
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
-
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

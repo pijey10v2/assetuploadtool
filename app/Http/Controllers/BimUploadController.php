@@ -98,8 +98,11 @@ class BimUploadController extends Controller
                 'name' => basename($file),
                 'size' => round(Storage::size($file) / 1024, 2) . ' KB',
                 'uploaded' => \Carbon\Carbon::createFromTimestamp(Storage::lastModified($file))->diffForHumans(),
+                'uploaded_by' => Auth::user()->name ?? 'System',
+                'uploaded_at' => Carbon::createFromTimestamp(Storage::lastModified($file))
+                    ->format('Y-m-d H:i:s'),
             ])
-            ->sortByDesc('uploaded');
+            ->sortByDesc('uploaded_at');
 
         // Apply search filter
         if (!empty($search)) {

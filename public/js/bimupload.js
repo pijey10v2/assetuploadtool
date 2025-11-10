@@ -85,7 +85,7 @@ $(function() {
                         Swal.fire('Cleared!', response.message, 'success');
                         $('#bimfile').val(''); // Clear file input field
                         // No bim file yet
-                        $('#bim-file-list').html('<div class="text-muted text-center py-3">No BIM files uploaded yet.</div>');
+                        $('#bim-file-list').html('<tr><td colspan="4" class="text-center text-muted">No files found.</td></tr>');
                         // Hide pagination
                         $('#bim-pagination').hide();
                         // Reset counter
@@ -224,24 +224,26 @@ $(function() {
      * =========================
      */
     function renderBimFileList(files) {
-        const container = $("#bim-file-list");
-        container.empty();
+        const list = $('#bim-file-list');
+        const counter = $('#bimfile-counter');
+        list.empty();
 
         if (!files.length) {
-            container.html('<div class="text-muted text-center py-3">No BIM files found.</div>');
+            list.html('<tr><td colspan="4" class="text-center text-muted">No files found.</td></tr>');
+            counter.text('Showing 0 of 0 BIM Files');
             return;
         }
 
         files.forEach(file => {
-            container.append(`
-                <div class="file-item border rounded p-2 mb-2 d-flex justify-content-between align-items-center">
-                    <div class="d-flex align-items-center">
-                        <input type="checkbox" class="form-check-input me-2 bim-checkbox" data-filename="${file.name}">
-                        <i class="bi bi-file-earmark-text text-primary me-2"></i>
-                        <strong>${file.name}</strong>
-                        <small class="text-muted ms-2">(${file.size}) — ${file.uploaded}</small>
-                    </div>
-                </div>
+            list.append(`
+                <tr>
+                    <td class="text-center">
+                         <input type="checkbox" class="form-check-input me-2 bim-checkbox" data-filename="${file.name}">
+                    </td>
+                    <td><i class="bi bi-file-earmark-text text-primary me-2"></i> ${file.name}</td>
+                    <td>${file.uploaded_at}</td>
+                    <td>${file.uploaded_by}</td>
+                </tr>
             `);
         });
     }

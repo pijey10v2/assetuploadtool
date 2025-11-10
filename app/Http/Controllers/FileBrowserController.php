@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class FileBrowserController extends Controller
 {
@@ -15,19 +16,30 @@ class FileBrowserController extends Controller
 
     public function getExcelFiles(Request $request)
     {
-        return $this->getFilesPaginated($request, 'uploads', ['xlsx', 'xls']);
+        return $this->getFilesPaginated($request, 'uploads', ['xlsx', 'xls', 'csv']);
     }
 
-    private function getFilesPaginated(Request $request, $directory, array $extensions)
+    private function getFilesPaginated(Request $request, string $directory, array $extensions)
     {
-        $page = $request->input('page', 1);
+        $page = (int) $request->input('page', 1);
         $perPage = 20;
+        $search = strtolower($request->input('search', ''));
 
+        // Get all files and filter by allowed extensions
         $files = collect(Storage::files($directory))
-            ->filter(fn($file) => in_array(strtolower(pathinfo($file, PATHINFO_EXTENSION)), $extensions))
+            ->filter(function ($file) use ($extensions, $search) {
+                $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                $matchesExtension = in_array($extension, $extensions);
+
+                // Optional search filtering by filename
+                $matchesSearch = empty($search) || Str::contains(strtolower(basename($file)), $search);
+
+                return $matchesExtension && $matchesSearch;
+            })
             ->sortByDesc(fn($file) => Storage::lastModified($file))
             ->values();
 
+        // Paginate manually (collection-based)
         $paginated = $files
             ->forPage($page, $perPage)
             ->map(fn($file) => [
@@ -41,7 +53,7 @@ class FileBrowserController extends Controller
             'status' => 'success',
             'files' => $paginated,
             'total' => $files->count(),
-            'page' => (int) $page,
+            'page' => $page,
             'per_page' => $perPage,
         ]);
     }
@@ -72,4 +84,56 @@ class FileBrowserController extends Controller
 
         return response()->json(['status' => 'success', 'message' => "All files in {$directory} have been cleared."]);
     }
+
+    public function clearSelectedBimFiles(Request $request)
+    {
+        $files = $request->input('files', []);
+
+        if (empty($files)) {
+            return response()->json(['message' => 'No files selected for deletion.'], 400);
+        }
+
+        $deleted = 0;
+
+        foreach ($files as $file) {
+            // Ensure only files inside 'bimfiles' directory are deleted (safety check)
+            $path = 'bimfiles/' . basename($file);
+
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+                $deleted++;
+            }
+        }
+
+        return response()->json([
+            'message' => "{$deleted} BIM file(s) deleted successfully.",
+        ]);
+    }
+
+
+    public function clearSelectedExcelFiles(Request $request)
+    {
+        $files = $request->input('files', []);
+
+        if (empty($files)) {
+            return response()->json(['message' => 'No files selected for deletion.'], 400);
+        }
+
+        $deleted = 0;
+
+        foreach ($files as $file) {
+            $path = 'uploads/' . basename($file);
+
+            if (Storage::exists($path)) {
+                Storage::delete($path);
+                $deleted++;
+            }
+        }
+
+        return response()->json([
+            'message' => "{$deleted} Excel file(s) deleted successfully.",
+        ]);
+    }
+
+
 }

@@ -73,5 +73,9 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/clear-bim', [FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
         // Dashboard page - Clear Excel files
         Route::delete('/clear-excel', [FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
+        // Dashboard page - Clear selected bim files
+        Route::delete('/files/clear-selected-bim', [FileBrowserController::class, 'clearSelectedBimFiles'])->name('files.clearSelectedBim');
+        // Dashboard page - Clear selected excel files
+        Route::delete('/files/clear-selected-excel', [FileBrowserController::class, 'clearSelectedExcelFiles'])->name('files.clearSelectedExcel');
     });
 });

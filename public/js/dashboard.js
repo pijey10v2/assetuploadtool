@@ -2,29 +2,11 @@ $(document).ready(function() {
 
     const routes = window.fileRoutes.routes;
 
-    $('#search-bim').on('keyup', function () {
-        const query = $(this).val().toLowerCase();
-
-        $('#bim-file-list .list-group-item').filter(function () {
-            $(this).toggle($(this).text().toLowerCase().indexOf(query) > -1);
-        });
-    });
-
-    $('#search-excel').on('keyup', function () {
-        const query = $(this).val().toLowerCase();
-
-        $('#excel-file-list .list-group-item').filter(function () {
-            $(this).toggle($(this).text().toLowerCase().indexOf(query) > -1);
-        });
-    });
-
-    let bimPage = 1;
-    let excelPage = 1;
-
+    // Load Files
+    let bimPage = 1, excelPage = 1;
     loadFiles('bim');
     loadFiles('excel');
 
-    // Load more event
     $('#load-more-bim').on('click', function() {
         bimPage++;
         loadFiles('bim', bimPage);
@@ -35,121 +17,142 @@ $(document).ready(function() {
         loadFiles('excel', excelPage);
     });
 
-    function loadFiles(type, page = 1, search) {
+    function loadFiles(type, page = 1, search = '') {
         const container = type === 'bim' ? '#bim-file-list' : '#excel-file-list';
         const loadMoreBtn = type === 'bim' ? '#load-more-bim' : '#load-more-excel';
+        const url = type === 'bim' ? routes.listBimFiles : routes.listExcelFiles;
 
-        if (page === 1) $(container).html('<div class="text-center text-muted">Loading files...</div>');
-
-        let url = '';
-
-        if (type === 'bim') {
-            url = `${routes.listBimFiles}?page=${page}`;
-        } else if (type === 'excel') {
-            url = `${routes.listExcelFiles}?page=${page}`;
-        }
+        if (page === 1) $(container).html('<tr><td colspan="4" class="text-center text-muted">Loading...</td></tr>');
 
         $.ajax({
-            url: url,
+            url: `${url}?page=${page}&search=${encodeURIComponent(search)}`,
             type: 'GET',
             success: function(response) {
                 if (response.status === 'success') {
-                    const files = response.files;
-
                     if (page === 1) $(container).empty();
 
-                    files.forEach(file => {
+                    response.files.forEach(file => {
                         $(container).append(`
-                            <div class="justify-content-between align-items-center">
-                                <div class="list-group-item ps-3">
-                                    <strong>${file.name}</strong><br>
-                                    <small class="text-muted">Modified: ${file.modified}</small>
-                                    <span class="badge bg-light text-dark">${file.size}</span>
-                                </div>
-                            </div>
+                            <tr>
+                                <td class="text-center">
+                                    <input type="checkbox" class="${type}-checkbox file-checkbox" data-filename="${file.name}">
+                                </td>
+                                <td>${file.name}</td>
+                            </tr>
                         `);
                     });
 
-                    const totalPages = Math.ceil(response.total / response.per_page);
-                    if (page < totalPages) {
-                        $(loadMoreBtn).removeClass('d-none');
-                    } else {
-                        $(loadMoreBtn).addClass('d-none');
-                    }
 
-                    if (response.total === 0) {
-                        $(container).html('<div class="text-center text-muted">No files found.</div>');
-                    }
+                    const totalPages = Math.ceil(response.total / response.per_page);
+                    $(loadMoreBtn).toggleClass('d-none', page >= totalPages);
                 }
             },
             error: function() {
-                $(container).html('<div class="text-danger text-center">Failed to load files.</div>');
+                $(container).html('<tr><td colspan="4" class="text-center text-danger">Failed to load files.</td></tr>');
             }
         });
     }
-});
 
-$(function () {
+    // Select All
+    $(document).on('change', '#check-all-bim', function() {
+        $('.bim-checkbox').prop('checked', this.checked);
+    });
 
-    const routes = window.fileRoutes.routes;
-    
-    function confirmAndClearFiles(url, listSelector, buttonSelector, fileType) {
+    $(document).on('change', '#check-all-excel', function() {
+        $('.excel-checkbox').prop('checked', this.checked);
+    });
+
+    // Search
+    $('#search-bim').on('keyup', function () {
+        const query = $(this).val();
+        loadFiles('bim', 1, query);
+    });
+
+    $('#search-excel').on('keyup', function () {
+        const query = $(this).val();
+        loadFiles('excel', 1, query);
+    });
+
+    // Clear Selected
+    function clearSelected(type) {
+        // Get selected filenames
+        const selected = $(`.${type}-checkbox:checked`).map(function () {
+            return $(this).data('filename');
+        }).get();
+
+        console.log(`Selected ${type} files:`, selected); // Debug line (check console)
+
+        // Check if any selected
+        if (!selected.length) {
+            Swal.fire('No files selected', `Please select ${type.toUpperCase()} files to clear.`, 'info');
+            return;
+        }
+
+        const clearRoute = type === 'bim'
+            ? routes.clearSelectedBim
+            : routes.clearSelectedExcel;
+
+        // Confirmation dialog
         Swal.fire({
-            title: `Clear all uploaded ${fileType}?`,
-            text: `This will permanently remove all uploaded ${fileType.toLowerCase()}.`,
+            title: `Are you sure you want to delete ${selected.length} file(s)?`,
+            text: `This will permanently delete the selected ${type.toUpperCase()} files.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, clear all',
+            confirmButtonText: 'Yes, delete',
             cancelButtonText: 'Cancel'
-        }).then((result) => {
+        }).then(result => {
             if (result.isConfirmed) {
-                $(buttonSelector)
-                    .prop('disabled', true)
-                    .html('<span class="spinner-border spinner-border-sm me-1"></span> Clearing...');
-
                 $.ajax({
-                    url: url,
+                    url: clearRoute,
                     type: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
+                    headers: { 'X-CSRF-TOKEN': window.fileRoutes.csrfToken },
+                    data: { files: selected },
                     success: function (response) {
-                        Swal.fire({
-                            title: 'Cleared!',
-                            text: response.message,
-                            icon: 'success',
-                            timer: 2500,
-                            showConfirmButton: false
-                        });
-
-                        $(listSelector).html(
-                            `<div class="text-muted text-center py-3">No ${fileType.toLowerCase()} available.</div>`
-                        );
+                        Swal.fire('Deleted!', response.message, 'success');
+                        loadFiles(type, 1); // reload list
                     },
                     error: function (xhr) {
-                        Swal.fire({
-                            title: 'Error',
-                            text: xhr.responseJSON?.message || `Failed to clear ${fileType}.`,
-                            icon: 'error'
-                        });
-                    },
-                    complete: function () {
-                        $(buttonSelector)
-                            .prop('disabled', false)
-                            .html(`<i class="bi bi-trash me-1"></i> Clear Uploaded ${fileType}`);
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Failed to delete files.', 'error');
                     }
                 });
             }
         });
     }
 
-    $('#clear-bim-files').on('click', function () {
-        confirmAndClearFiles(routes.clearBim, '#bim-file-list', '#clear-bim-files', 'i.BIM Files');
-    });
+    $('#clear-selected-bim').on('click', function () { clearSelected('bim'); });
+    $('#clear-selected-excel').on('click', function () { clearSelected('excel'); });
 
-    $('#clear-excel-files').on('click', function () {
-        confirmAndClearFiles(routes.clearExcel, '#excel-file-list', '#clear-excel-files', 'Excel Files');
-    });
+    // Clear All
+    function clearAll(type) {
+        const clearRoute = type === 'bim' ? routes.clearBim : routes.clearExcel;
+
+        Swal.fire({
+            title: `Clear all ${type.toUpperCase()} files?`,
+            text: `This will permanently remove all uploaded ${type.toUpperCase()} files.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, clear all',
+        }).then(result => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: clearRoute,
+                    type: 'DELETE',
+                    headers: { 'X-CSRF-TOKEN': window.fileRoutes.csrfToken },
+                    success: function(response) {
+                        Swal.fire('Cleared!', response.message, 'success');
+                        loadFiles(type, 1);
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Failed to clear files.', 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    $('#clear-bim-files').on('click', function () { clearAll('bim'); });
+    $('#clear-excel-files').on('click', function () { clearAll('excel'); });
 });
