@@ -33,8 +33,6 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
 // Authenticated routes
 Route::middleware(['auth'])->group(function () {
 
