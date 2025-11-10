@@ -116,12 +116,7 @@
     <div id="app">
         <nav class="navbar navbar-expand-md navbar-light bg-white shadow-sm">
             <div class="container">
-                @auth
-                <a class="nav-link {{ request()->is('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                    <!-- {{ config('app.name', 'Laravel') }} -->
-                    Home
-                </a>
-                @endauth
+
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -130,6 +125,12 @@
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav me-auto">
                         @auth
+                            <li class="nav-item">
+                                <a class="nav-link {{ request()->is('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                                    <!-- {{ config('app.name', 'Laravel') }} -->
+                                    Dashboard
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->is('bimupload*') ? 'active' : '' }}" href="{{ route('bimupload.index') }}">
                                     Upload i.BIM
