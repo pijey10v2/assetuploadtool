@@ -41,7 +41,7 @@
             <select class="form-select" id="data_id" name="data_id" required>
                 <option value="">Select Layer...</option>
                 @foreach($layers as $layer)
-                    <option value="{{ $layer->Data_ID }}">Data ID: {{ $layer->Data_ID }} - Layer Name: {{ $layer->Layer_Name }}</option>
+                    <option value="{{ $layer->Data_ID }}">{{ $layer->Layer_Name }} - {{ $layer->Data_ID }}</option>
                 @endforeach
             </select>
             <div class="invalid-feedback">Please select a Data ID.</div>
