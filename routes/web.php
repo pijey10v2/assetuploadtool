@@ -53,7 +53,7 @@ Route::middleware(['auth'])->group(function () {
         // Upload i-BIM form submission
         Route::post('/', [BimUploadController::class, 'store'])->name('bimupload.store');
         // Clear All i-BIM Files
-        Route::delete('/clear', [BimUploadController::class, 'clearBim'])->name('bimupload.clearBim');
+        Route::post('/clear', [BimUploadController::class, 'clearBim'])->name('bimupload.clearBim');
         // Clear selected i-BIM file
         Route::post('/clear-bim', [BimUploadController::class, 'clearSelectedBimFiles'])->name('bimupload.clearBimFiles');
         // Get i-BIM files list for BIM upload page
@@ -66,12 +66,12 @@ Route::middleware(['auth'])->group(function () {
         // Get Excel files list
         Route::get('/excel', [FileBrowserController::class, 'getExcelFiles'])->name('files.excel');
         // Dashboard page - Clear bim files
-        Route::delete('/clear-bim', [FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
+        Route::post('/clear-bim', [FileBrowserController::class, 'clearBimFiles'])->name('files.clearBim');
         // Dashboard page - Clear Excel files
-        Route::delete('/clear-excel', [FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
+        Route::post('/clear-excel', [FileBrowserController::class, 'clearExcelFiles'])->name('files.clearExcel');
         // Dashboard page - Clear selected bim files
-        Route::delete('/files/clear-selected-bim', [FileBrowserController::class, 'clearSelectedBimFiles'])->name('files.clearSelectedBim');
+        Route::post('/clear-selected-bim', [FileBrowserController::class, 'clearSelectedBimFiles'])->name('files.clearSelectedBim');
         // Dashboard page - Clear selected excel files
-        Route::delete('/files/clear-selected-excel', [FileBrowserController::class, 'clearSelectedExcelFiles'])->name('files.clearSelectedExcel');
+        Route::post('/clear-selected-excel', [FileBrowserController::class, 'clearSelectedExcelFiles'])->name('files.clearSelectedExcel');
     });
 });

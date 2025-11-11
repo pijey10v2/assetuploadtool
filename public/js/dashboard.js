@@ -110,9 +110,13 @@ $(document).ready(function() {
             if (result.isConfirmed) {
                 $.ajax({
                     url: clearRoute,
-                    type: 'DELETE',
+                    type: 'POST', // Send as POST to bypass IIS restrictions
                     headers: { 'X-CSRF-TOKEN': window.fileRoutes.csrfToken },
-                    data: { files: selected },
+                    data: {
+                        _method: 'POST', // Spoof DELETE
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        files: selected
+                    },
                     success: function (response) {
                         Swal.fire('Deleted!', response.message, 'success');
                         loadFiles(type, 1); // reload list
@@ -143,7 +147,11 @@ $(document).ready(function() {
             if (result.isConfirmed) {
                 $.ajax({
                     url: clearRoute,
-                    type: 'DELETE',
+                    type: 'POST', // Send as POST to bypass IIS restrictions
+                    data: {
+                        _method: 'POST', // Spoof DELETE
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                    },
                     headers: { 'X-CSRF-TOKEN': window.fileRoutes.csrfToken },
                     success: function(response) {
                         Swal.fire('Cleared!', response.message, 'success');

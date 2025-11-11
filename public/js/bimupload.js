@@ -79,8 +79,12 @@ $(function() {
             if (result.isConfirmed) {
                 $.ajax({
                     url: routes.clearBim,
-                    type: 'DELETE',
+                    type: 'POST', // Send as POST to bypass IIS restrictions
                     headers: { 'X-CSRF-TOKEN': csrfToken },
+                    data: {
+                        _method: 'POST', // Spoof DELETE
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                    },
                     success: function(response) {
                         Swal.fire('Cleared!', response.message, 'success');
                         $('#bimfile').val(''); // Clear file input field
@@ -149,8 +153,9 @@ $(function() {
             if (result.isConfirmed) {
                 $.ajax({
                     url: routes.clearBimFiles,
-                    type: 'POST',
+                    type: 'POST', // Send as POST to bypass IIS restrictions
                     data: {
+                        _method: 'POST', // Spoof DELETE
                         _token: $('meta[name="csrf-token"]').attr('content'),
                         files: selectedFiles
                     },
