@@ -31,7 +31,7 @@
             api: {
                 getAllTables: "{{ env('API_GET_ALL_TABLES_URL') }}",
                 getProjects: "{{ route('api.projects') }}",
-                getLayersByProject: "{{ url('/dropdown/layers') }}" // base URL, we’ll append project ID in JS
+                getLayersByProject: "{{ url('/dropdown/layers') }}" // base URL, append project ID in JS
             }
         };
     </script>
