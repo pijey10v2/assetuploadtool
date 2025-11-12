@@ -45,7 +45,7 @@
         </div>
 
         <div class="mb-3" id="layer-wrapper" style="display:none;">
-            <label for="data_id" class="form-label">Select Layer Name (Data ID) <span class="text-danger">*</span></label>
+            <label for="data_id" class="form-label">Select Layer <span class="text-danger">*</span></label>
             <select class="form-select" id="data_id" name="data_id" required>
                 <option value="">Select Layer...</option>
                 <!-- Populated dynamically -->

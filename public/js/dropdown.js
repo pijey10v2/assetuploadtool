@@ -45,7 +45,7 @@ $(document).ready(function () {
                         response.layers.forEach(layer => {
                             layerDropdown.append(`
                                 <option value="${layer.Data_ID}">
-                                    ${layer.Layer_Name} - (${layer.Data_ID})
+                                    ${layer.Layer_Name} (${layer.Data_ID})
                                 </option>
                             `);
                         });
