@@ -76,7 +76,9 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('dropdown')->group(function () {
+        // Dropdown list for project names
         Route::get('/projects', [UploadToolController::class, 'getProjects'])->name('api.projects');
+        // Dropdown list for layers (data id) based on selected projects.project id
         Route::get('/layers/{projectId}', [UploadToolController::class, 'getLayersByProject'])->name('api.layers.byProject');
     });
 
