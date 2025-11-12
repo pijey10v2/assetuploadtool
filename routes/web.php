@@ -74,4 +74,10 @@ Route::middleware(['auth'])->group(function () {
         // Dashboard page - Clear selected excel files
         Route::post('/clear-selected-excel', [FileBrowserController::class, 'clearSelectedExcelFiles'])->name('files.clearSelectedExcel');
     });
+
+    Route::prefix('dropdown')->group(function () {
+        Route::get('/projects', [UploadToolController::class, 'getProjects'])->name('api.projects');
+        Route::get('/layers/{projectId}', [UploadToolController::class, 'getLayersByProject'])->name('api.layers.byProject');
+    });
+
 });

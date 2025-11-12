@@ -29,9 +29,12 @@
                 progress: "{{ url('/uploadtool/progress') }}"
             },
             api: {
-                getAllTables: "{{ env('API_GET_ALL_TABLES_URL') }}"
+                getAllTables: "{{ env('API_GET_ALL_TABLES_URL') }}",
+                getProjects: "{{ route('api.projects') }}",
+                getLayersByProject: "{{ url('/dropdown/layers') }}" // base URL, we’ll append project ID in JS
             }
         };
     </script>
     <script src="{{ asset('js/uploadtool.js') }}"></script>
+    <script src="{{ asset('js/dropdown.js') }}"></script>
 @endpush

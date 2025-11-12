@@ -296,4 +296,32 @@ class UploadToolController extends Controller
         return $batchNo; // return string (e.g. app_fd_inv_pavement-20251104-0001)
     }
 
+    public function getProjects()
+    {
+        $projects = DB::table('projects')
+            ->select('project_id_number', 'project_id', 'project_name')
+            ->orderBy('project_name')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'projects' => $projects
+        ]);
+    }
+
+    public function getLayersByProject($projectIdNumber)
+    {
+        $layers = DB::table('Project_Layers')
+            ->select('Data_ID', 'Layer_Name', 'Project_ID')
+            ->where('Project_ID', $projectIdNumber)
+            ->orderBy('Layer_Name')
+            ->get();
+
+        return response()->json([
+            'status' => 'success',
+            'layers' => $layers
+        ]);
+    }
+
+
 }

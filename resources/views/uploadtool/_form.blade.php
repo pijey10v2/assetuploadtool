@@ -35,16 +35,22 @@
             <div class="invalid-feedback">Please select a valid Excel file (.xlsx / .xls).</div>
         </div>
 
-        <!-- Data ID -->
         <div class="mb-3">
-            <label for="data_id" class="form-label">Select Data ID (Layer Name) <span class="text-danger">*</span></label>
+            <label for="project_id" class="form-label">Select Project <span class="text-danger">*</span></label>
+            <select class="form-select" id="project_id" name="project_id" required>
+                <option value="">Select Project...</option>
+                <!-- Populated by AJAX -->
+            </select>
+            <div class="invalid-feedback">Please select a project.</div>
+        </div>
+
+        <div class="mb-3" id="layer-wrapper" style="display:none;">
+            <label for="data_id" class="form-label">Select Layer Name (Data ID) <span class="text-danger">*</span></label>
             <select class="form-select" id="data_id" name="data_id" required>
                 <option value="">Select Layer...</option>
-                @foreach($layers as $layer)
-                    <option value="{{ $layer->Data_ID }}">{{ $layer->Layer_Name }} - {{ $layer->Data_ID }}</option>
-                @endforeach
+                <!-- Populated dynamically -->
             </select>
-            <div class="invalid-feedback">Please select a Data ID.</div>
+            <div class="invalid-feedback">Please select a layer.</div>
         </div>
 
         <!-- Asset Table -->
