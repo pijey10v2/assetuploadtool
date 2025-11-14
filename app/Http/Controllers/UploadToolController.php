@@ -300,7 +300,7 @@ class UploadToolController extends Controller
     {
         $projects = DB::table('projects')
             ->select('project_id_number', 'project_id', 'project_name')
-            ->orderBy('project_name')
+            ->orderBy('project_name', 'asc')
             ->get();
 
         return response()->json([
@@ -314,7 +314,7 @@ class UploadToolController extends Controller
         $layers = DB::table('Project_Layers')
             ->select('Data_ID', 'Layer_Name', 'Project_ID')
             ->where('Project_ID', $projectIdNumber)
-            ->orderBy('Layer_Name')
+            ->orderBy('Layer_Name', 'asc')
             ->get();
 
         return response()->json([

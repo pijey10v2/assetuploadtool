@@ -41,6 +41,7 @@
                 <option value="">Select Project...</option>
                 <!-- Populated by AJAX -->
             </select>
+            <small class="form-text text-muted">Project Name (Project ID)</small>
             <div class="invalid-feedback">Please select a project.</div>
         </div>
 
@@ -50,6 +51,7 @@
                 <option value="">Select Layer...</option>
                 <!-- Populated dynamically -->
             </select>
+            <small class="form-text text-muted">Layer Name (Data ID)</small>
             <div class="invalid-feedback">Please select a layer.</div>
         </div>
 

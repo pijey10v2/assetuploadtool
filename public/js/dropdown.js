@@ -13,7 +13,7 @@ $(document).ready(function () {
                 response.projects.forEach(project => {
                     projectDropdown.append(`
                         <option value="${project.project_id_number}">
-                            ${project.project_id} - ${project.project_name}
+                            ${project.project_name} (${project.project_id})
                         </option>
                     `);
                 });
