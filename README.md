@@ -277,6 +277,7 @@ post_max_size = 5000M
 max_execution_time = 30  
 max_input_time = 60  
 max_input_vars = 10000
+memory_limit = 10G
 ```
 💡 Note:
 After updating your php.ini, restart your web server (e.g., IIS, Apache, Nginx, or PHP-FPM) to apply the changes.  
