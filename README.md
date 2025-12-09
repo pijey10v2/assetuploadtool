@@ -188,7 +188,7 @@ app/
 | Issue                                           | Solution                                                                 |
 | ----------------------------------------------- | ------------------------------------------------------------------------ |
 | `cURL error 77: error setting certificate file` | Ensure `php.ini` has a valid `curl.cainfo` path pointing to `cacert.pem` |
-| `Allowed memory size exhausted`                 | Increase memory in `php.ini` → `memory_limit = 1024M`                    |
+| `Allowed memory size exhausted`                 | Increase memory in `php.ini` → `memory_limit = 10G`                    |
 | Progress bar not updating                       | Confirm `php artisan queue:work` is running and `CACHE_DRIVER=file`      |
 | BIM file not found                              | Verify `.bim` files exist under `storage/app/bimfiles`                   |
 | AJAX error 419                                  | Ensure CSRF token is present in your AJAX request headers                |
