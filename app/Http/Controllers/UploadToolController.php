@@ -17,9 +17,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
-ini_set('memory_limit', '1024M'); // Increase memory
-set_time_limit(0); // Disable script timeout
-
 class UploadToolController extends Controller
 {
     public function index()
@@ -42,8 +39,6 @@ class UploadToolController extends Controller
 
     public function store(Request $request)
     {
-        ini_set('memory_limit', '1024M');
-        set_time_limit(0);
 
         $request->validate([
             // 'bimfile' => 'required|file|mimes:bim,sqlite,sqlite3,db|max:51200',

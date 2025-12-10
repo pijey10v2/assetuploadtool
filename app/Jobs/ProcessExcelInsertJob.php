@@ -73,8 +73,12 @@ class ProcessExcelInsertJob implements ShouldQueue
         $apiUrl = env('JOGET_API_URL');
 
         foreach ($dataRows->chunk(100) as $chunk) {
+
+            $batchPayload = [];
+
             foreach ($chunk as $row) {
                 $mapped = [];
+
                 foreach ($this->mappings as $map) {
                     $dbCol = array_keys($map)[0];
                     $excelCol = $map[$dbCol];
@@ -93,43 +97,43 @@ class ProcessExcelInsertJob implements ShouldQueue
                     ]);
                 }
 
-                $response = Http::asForm()->post($apiUrl, [
-                    'mode' => 'insert_asset_data',
-                    'import_batch_no' => $this->importBatchNo,
-                    'data_id' => $this->dataId,
-                    'asset_table_name' => $this->assetTableName,
-                    'row_data' => json_encode($mapped),
-                    'bim_results' => json_encode($this->bimResults),
-                    'createdBy' => $this->createdBy ?? 'system@localhost',           // Email
-                    'createdByName' => $this->createdByName ?? 'System Job',   // Name
-                ]);
-
-                if ($response->successful()) {
-                    $inserted++;
-                }
-
-                $processed++;
-
-                // Update cache every few rows
-                if ($processed % 10 === 0 || $processed === $totalRows) {
-
-                    $progressPercent = $totalRows > 0 ? round(($processed / $totalRows) * 100, 2) : 0;
-
-                     \Log::info("Updating progress: {$processed}/{$totalRows} ({$progressPercent}%)");
-
-                    Cache::put("upload_progress_{$this->jobId}", [
-                        'status' => 'processing',
-                        'processed' => $processed,
-                        'total' => $totalRows,
-                        'inserted' => $inserted,
-                        'progress' => $progressPercent
-                    ], now()->addMinutes(10));
-                }
+                $batchPayload[] = $mapped;
             }
+
+            // Now send ONE API request for 100 rows
+            $response = Http::asForm()->post($apiUrl, [
+                'mode' => 'bulk_insert_asset_data',
+                'import_batch_no' => $this->importBatchNo,
+                'data_id' => $this->dataId,
+                'asset_table_name' => $this->assetTableName,
+                'row_data' => json_encode($batchPayload),
+                'bim_results' => json_encode($this->bimResults),
+                'createdBy' => $this->createdBy ?? 'system@localhost',
+                'createdByName' => $this->createdByName ?? 'System Job',
+            ]);
+
+            if ($response->successful()) {
+                $inserted += count($batchPayload);
+            }
+
+            $processed += count($batchPayload);
+
+            // Update progress
+            $progressPercent = $totalRows > 0 ? round(($processed / $totalRows) * 100, 2) : 0;
+            \Log::info("Updating progress: {$processed}/{$totalRows} ({$progressPercent}%)");
+
+            Cache::put("upload_progress_{$this->jobId}", [
+                'status' => 'processing',
+                'processed' => $processed,
+                'total' => $totalRows,
+                'inserted' => $inserted,
+                'progress' => $progressPercent
+            ], now()->addMinutes(10));
 
             // Slight delay between chunks (optional)
             usleep(250000); // 0.25 sec
         }
+
 
         Cache::put("upload_progress_{$this->jobId}", [
             'status' => 'done',

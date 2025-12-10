@@ -274,9 +274,9 @@ You can update the following settings in your php.ini file:
 max_file_uploads = 100  
 upload_max_filesize = 5000M  
 post_max_size = 5000M  
-max_execution_time = 30  
+max_execution_time = 0
 max_input_time = 60  
-max_input_vars = 10000
+max_input_vars = 900000
 memory_limit = 10G
 ```
 💡 Note:
