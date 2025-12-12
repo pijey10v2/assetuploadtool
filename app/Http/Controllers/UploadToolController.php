@@ -16,6 +16,7 @@ use App\Models\AssetMapping;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Exports\MappedDataExport;
 
 class UploadToolController extends Controller
 {
@@ -316,6 +317,65 @@ class UploadToolController extends Controller
             'status' => 'success',
             'layers' => $layers
         ]);
+    }
+
+    public function exportMapped(Request $request)
+    {
+        $validated = $request->validate([
+            'rawfile_path' => 'required|string',
+            'mappings' => 'required|array',
+            'bim_results' => 'nullable|array'
+        ]);
+
+        $rawfilePath = storage_path('app/' . $validated['rawfile_path']);
+        $mappings = $validated['mappings'];
+        $bimResults = $validated['bim_results'] ?? [];
+
+        // Load Excel
+        $excelData = \Maatwebsite\Excel\Facades\Excel::toCollection(null, $rawfilePath)->first();
+
+        if (!$excelData || $excelData->count() < 1) {
+            return response()->json(['message' => 'Raw file data is empty'], 422);
+        }
+
+        $headerRow = $excelData->first()->toArray();
+        $dataRows = $excelData->skip(1)->values();
+
+        $mappedData = [];
+
+        foreach ($dataRows as $row) {
+            $row = $row->toArray();
+            $mappedRow = [];
+
+            foreach ($mappings as $map) {
+
+                // mapping format: { "dbCol": "excelColName" }
+                $dbCol = array_key_first($map);
+                $excelCol = $map[$dbCol];
+
+                // Find column index just like insert job
+                $colIndex = array_search($excelCol, array_values($headerRow));
+
+                $mappedRow[$dbCol] = $colIndex !== false
+                    ? ($row[$colIndex] ?? null)
+                    : null;
+            }
+
+            // Match BIM record (same as Insert API)
+            if (!empty($bimResults)) {
+                $bimMatch = collect($bimResults)->firstWhere('ElementId', $mappedRow['c_model_element'] ?? '');
+                if ($bimMatch) {
+                    $mappedRow = array_merge($mappedRow, $bimMatch);
+                }
+            }
+
+            $mappedData[] = $mappedRow;
+        }
+
+        // Export
+        $fileName = 'Mapped_Data_' . now()->format('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(new MappedDataExport($mappedData), $fileName);
     }
 
 

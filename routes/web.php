@@ -45,6 +45,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/execute-update', [UploadToolController::class, 'executeUpdate'])->name('uploadtool.execute');
         // Upload tool progress update
         Route::get('/progress', [UploadToolController::class, 'getProgress'])->name('uploadtool.progress');
+        // Export mapped data
+        Route::post('/export-mapped', [UploadToolController::class, 'exportMapped'])->name('uploadtool.exportMapped');
     });
 
     Route::prefix('bimupload')->group(function () {

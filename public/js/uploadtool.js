@@ -387,4 +387,60 @@ $(document).ready(function () {
             });
         }, 2000); // Poll every 2 seconds
     }
+
+    $('#export-mapped').on('click', function () {
+        
+        const mappings = getSelectedMappings();
+
+        if (!mappings.length) {
+            Swal.fire('Missing Mappings', 'Please complete your column mappings before exporting.', 'warning');
+            return;
+        }
+
+        Swal.fire({
+            title: 'Export Mapped Data?',
+            text: 'This will download an Excel file containing your mapped data.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Export',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#3085d6'
+        }).then(result => {
+            if (!result.isConfirmed) return;
+
+            const btn = $('#export-mapped');
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Exporting...');
+
+            $.ajax({
+                url: window.uploadToolConfig.routes.exportMapped,
+                type: 'POST',
+                xhrFields: { responseType: 'blob' },
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                data: {
+                    mappings: mappings,
+                    rawfile_path: window.rawFilePath,
+                    bim_results: window.bimResults || []
+                },
+                success: function (blob, status, xhr) {
+                    const filename = xhr.getResponseHeader('Content-Disposition')
+                        ?.split('filename=')[1]
+                        ?.replace(/"/g, '') || 'Mapped_Data.xlsx';
+
+                    const link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = filename;
+                    link.click();
+
+                    Swal.fire('Success', 'Mapped data exported successfully!', 'success');
+                },
+                error: function () {
+                    Swal.fire('Error', 'Failed to export mapped data.', 'error');
+                },
+                complete: function () {
+                    btn.prop('disabled', false).html('<i class="bi bi-download me-1"></i> Export Mapped Data');
+                }
+            });
+        });
+    });
 });
+
