@@ -321,12 +321,59 @@ class UploadToolController extends Controller
 
     public function exportMapped(Request $request)
     {
+
         $validated = $request->validate([
             'rawfile_path' => 'required|string',
             'mappings' => 'required|array',
-            'bim_results' => 'nullable|array'
+            'bim_results' => 'nullable|array',
+            'data_id' => 'required|string',
+            'asset_table_name' => 'required|string',
+            'import_batch_no' => 'required|string',
         ]);
 
+        $c_package_id    = null;
+        $c_package_uuid  = null;
+        $c_project_id    = null;
+        $c_project_owner = null;
+
+        // Query Project_Layers table to get Project_ID
+        $layer = DB::table('Project_Layers')
+            ->select('Data_ID', 'Project_ID')
+            ->where('Data_ID', $validated['data_id'])
+            ->first();
+
+        if ($layer) {
+
+            // Use the retrieved Project_ID to get details from the projects table
+            $project = DB::table('projects')
+            ->select('project_id', 'project_id_number', 'parent_project_id_number', 'project_owner')
+            ->where('project_id_number', $layer->Project_ID)
+            ->first();
+
+            if ($project) {
+
+                // Get parent project info (optional if exists)
+                $parent = DB::table('projects')
+                    ->select('project_id_number', 'project_id')
+                    ->where('project_id_number', $project->parent_project_id_number)
+                    ->first();
+
+                // Build derived mapping
+                $projectData = [
+                    'c_package_id'    => $project->project_id ?? null,
+                    'c_package_uuid'  => ($project->project_id_number ?? '') . '_' . ($project->project_id ?? '') . '_' . ($project->project_id_number ?? ''),
+                    'c_project_id'    => $parent->project_id ?? null,
+                    'c_project_owner' => $project->project_owner ?? null,
+                ];
+
+                $c_package_id    = $projectData['c_package_id'];
+                $c_package_uuid  = $projectData['c_package_uuid'];
+                $c_project_id    = $projectData['c_project_id'];
+                $c_project_owner = $projectData['c_project_owner'];
+            }
+        }
+
+        
         $rawfilePath = storage_path('app/' . $validated['rawfile_path']);
         $mappings = $validated['mappings'];
         $bimResults = $validated['bim_results'] ?? [];
@@ -356,6 +403,18 @@ class UploadToolController extends Controller
                 // Find column index just like insert job
                 $colIndex = array_search($excelCol, array_values($headerRow));
 
+                $mappedRow['id'] = $this->generateUUIDv4(); 
+                $mappedRow['created_at'] = now();
+                $mappedRow['updated_at'] = now();
+                $mappedRow['created_by'] = Auth::user()->email;
+                $mappedRow['created_by_name'] = Auth::user()->name;
+                $mappedRow['import_batch_no'] = $validated['import_batch_no'];
+                $mappedRow['data_id'] = $validated['data_id'];
+                $mappedRow['c_package_id']    = $c_package_id;
+                $mappedRow['c_package_uuid']  = $c_package_uuid;
+                $mappedRow['c_project_id']    = $c_project_id;
+                $mappedRow['c_project_owner'] = $c_project_owner;
+
                 $mappedRow[$dbCol] = $colIndex !== false
                     ? ($row[$colIndex] ?? null)
                     : null;
@@ -376,6 +435,22 @@ class UploadToolController extends Controller
         $fileName = 'Mapped_Data_' . now()->format('Y-m-d_His') . '.xlsx';
 
         return Excel::download(new MappedDataExport($mappedData), $fileName);
+    }
+
+    /**
+     * Generate a UUID v4 string
+     * 
+     * @return string UUIDv4
+     */
+    private function generateUUIDv4() 
+    {
+        // Generate random bytes
+        $data = random_bytes(16);
+        $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // version 4
+        $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // variant 
+
+        // Convert to UUIDv4 format
+        return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
     }
 
 

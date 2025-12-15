@@ -419,7 +419,10 @@ $(document).ready(function () {
                 data: {
                     mappings: mappings,
                     rawfile_path: window.rawFilePath,
-                    bim_results: window.bimResults || []
+                    bim_results: window.bimResults || [],
+                    data_id: window.dataId,
+                    asset_table_name: window.assetTableName,
+                    import_batch_no: window.importBatchNo,
                 },
                 success: function (blob, status, xhr) {
                     const filename = xhr.getResponseHeader('Content-Disposition')
