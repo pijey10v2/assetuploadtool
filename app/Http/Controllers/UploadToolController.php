@@ -376,7 +376,7 @@ class UploadToolController extends Controller
         
         $rawfilePath = storage_path('app/' . $validated['rawfile_path']);
         $mappings = $validated['mappings'];
-        $bimResults = $validated['bim_results'] ?? [];
+        $bimResults = $validated['bim_results'] ?? []; //"ElementId" => "129", "ps2" => "1735" (ps2 = model element)
 
         // Load Excel
         $excelData = \Maatwebsite\Excel\Facades\Excel::toCollection(null, $rawfilePath)->first();
@@ -392,7 +392,21 @@ class UploadToolController extends Controller
 
         foreach ($dataRows as $row) {
             $row = $row->toArray();
-            $mappedRow = [];
+
+            // Initialize once per row
+            $mappedRow = [
+                'id'               => $this->generateUUIDv4(),
+                'createdBy'        => now(),
+                'modifiedBy'       => now(),
+                'dateCreated'      => now(),
+                'createdByName'    => Auth::user()->name,
+                'c_import_batch'   => $validated['import_batch_no'] ?? 'NULL',
+                'c_data_id'        => $validated['data_id'] ?? 'NULL',
+                'c_package_id'     => $c_package_id ?? 'NULL',
+                'c_package_uuid'   => $c_package_uuid ?? 'NULL',
+                'c_project_id'     => $c_project_id ?? 'NULL',
+                'c_project_owner'  => $c_project_owner ?? 'NULL',
+            ];
 
             foreach ($mappings as $map) {
 
@@ -400,37 +414,35 @@ class UploadToolController extends Controller
                 $dbCol = array_key_first($map);
                 $excelCol = $map[$dbCol];
 
-                // Find column index just like insert job
-                $colIndex = array_search($excelCol, array_values($headerRow));
+                $colIndex = trim(array_search($excelCol, array_values($headerRow)));
 
-                $mappedRow['id'] = $this->generateUUIDv4(); 
-                $mappedRow['created_at'] = now();
-                $mappedRow['updated_at'] = now();
-                $mappedRow['created_by'] = Auth::user()->email;
-                $mappedRow['created_by_name'] = Auth::user()->name;
-                $mappedRow['import_batch_no'] = $validated['import_batch_no'];
-                $mappedRow['data_id'] = $validated['data_id'];
-                $mappedRow['c_package_id']    = $c_package_id;
-                $mappedRow['c_package_uuid']  = $c_package_uuid;
-                $mappedRow['c_project_id']    = $c_project_id;
-                $mappedRow['c_project_owner'] = $c_project_owner;
+                $value = ($colIndex !== false && isset($row[$colIndex]) && $row[$colIndex] !== '')
+                    ? $row[$colIndex]
+                    : 'NULL';
 
-                $mappedRow[$dbCol] = $colIndex !== false
-                    ? ($row[$colIndex] ?? null)
-                    : null;
+                $mappedRow[$dbCol] = trim($value);
             }
 
-            // Match BIM record (same as Insert API)
+            // Match BIM record
             if (!empty($bimResults)) {
-                $bimMatch = collect($bimResults)->firstWhere('ElementId', $mappedRow['c_model_element'] ?? '');
+                $bimMatch = collect($bimResults)
+                    ->firstWhere('ps2', $mappedRow['c_model_element'] ?? ''); // match by model element
+
                 if ($bimMatch) {
-                    $mappedRow = array_merge($mappedRow, $bimMatch);
+                    foreach ($bimMatch as $key => $value) {
+                        $mappedRow[$key] = (trim($value) === null || trim($value) === '') ? 'NULL' : $value;
+                    }
+                    
+                    $mappedRow['c_element_id'] = $bimMatch['ElementId'] ?? 'NULL';
                 }
             }
 
+            // Remove unwanted BIM columns
+            unset($mappedRow['ps2'], $mappedRow['ElementId']);
+
             $mappedData[] = $mappedRow;
         }
-
+        
         // Export
         $fileName = 'Mapped_Data_' . now()->format('Y-m-d_His') . '.xlsx';
 
