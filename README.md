@@ -282,6 +282,25 @@ memory_limit = 10G
 💡 Note:
 After updating your php.ini, restart your web server (e.g., IIS, Apache, Nginx, or PHP-FPM) to apply the changes.  
 
+# Additional SQL Query Update:
+
+Make sure to add UNIQUE KEY on asset table (e.g. app_fd_inv_furniture) for columns: c_import_batch, c_model_element:
+
+Add UNIQUE KEY:
+
+```
+ALTER TABLE jwdb.app_fd_inv_furniture
+ADD UNIQUE KEY uniq_model_batch (c_model_element(191), c_import_batch(191));
+```
+
+Check if the UNIQUE KEY is added:
+
+```
+SHOW INDEX
+FROM jwdb.app_fd_inv_furniture
+WHERE Key_name = 'uniq_model_batch';
+```
+
 # 👨‍💻 Author
 
 Paolo Jon B. Caraig  
