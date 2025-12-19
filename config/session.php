@@ -31,7 +31,9 @@ return [
     |
     */
 
-    'lifetime' => env('SESSION_LIFETIME', 120),
+    // 'lifetime' => env('SESSION_LIFETIME', 120), // Default is usually 120 (2 hours) or 60 (1 hour)
+    'lifetime' => env('SESSION_LIFETIME', 480), // 8 hours
+
 
     'expire_on_close' => false,
 

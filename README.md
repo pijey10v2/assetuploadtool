@@ -301,6 +301,13 @@ FROM jwdb.app_fd_inv_furniture
 WHERE Key_name = 'uniq_model_batch';
 ```
 
+# Increase Session Lifetime:
+
+Set to 8 hours:
+```
+SESSION_LIFETIME=480
+```
+
 # 👨‍💻 Author
 
 Paolo Jon B. Caraig  
