@@ -57,7 +57,12 @@ class ProcessExcelChunkJob implements ShouldQueue
 
     public function handle()
     {
+        //$apiUrl = env('JOGET_API_URL') . '?mode=bulk_insert_asset_data';
         $apiUrl = env('JOGET_API_URL');
+
+        Log::info('API URL', [
+            'url' => $apiUrl
+        ]);
 
         // Precompute column indexes
         $columnIndexMap = [];
@@ -88,19 +93,42 @@ class ProcessExcelChunkJob implements ShouldQueue
             $payload[] = $mapped;
         }
 
-        $response = Http::connectTimeout(5)
-            ->timeout(10) // 3 minutes max
-            ->asForm()
-            ->post($apiUrl, [
-                'mode' => 'bulk_insert_asset_data', // API mode to trigger bulk insert
-                'import_batch_no' => $this->importBatchNo,
-                'data_id' => $this->dataId,
-                'asset_table_name' => $this->assetTableName,
-                'row_data' => json_encode($payload),
-                'bim_results' => json_encode($this->bimResults),
-                'createdBy' => $this->createdBy,
-                'createdByName' => $this->createdByName,
-            ]);
+        // this is for content-type: application/x-www-form-urlencoded
+        // $response = Http::asForm()
+        // ->retry(0, 0) // NO RETRIES
+        // ->connectTimeout(30) 
+        // ->timeout(180)
+        // // ->asJson()
+        // ->post($apiUrl, [
+        //         'mode' => 'bulk_insert_asset_data', // API mode to trigger bulk insert
+        //         'import_batch_no' => $this->importBatchNo,
+        //         'data_id' => $this->dataId,
+        //         'asset_table_name' => $this->assetTableName,
+        //         'row_data' => json_encode($payload),
+        //         'bim_results' => json_encode($this->bimResults),
+        //         'createdBy' => $this->createdBy,
+        //         'createdByName' => $this->createdByName,
+        //     ]);
+
+        // ***content-type SHOULD BE multipart/form-data***
+        // content-type: multipart/form-data is ONLY used when you call attach() 
+        $response = Http::retry(0, 0)
+        ->connectTimeout(30)
+        ->timeout(180)
+        ->attach('mode', 'bulk_insert_asset_data')
+        ->attach('import_batch_no', $this->importBatchNo)
+        ->attach('data_id', $this->dataId)
+        ->attach('asset_table_name', $this->assetTableName)
+        ->attach('row_data', json_encode($payload))
+        ->attach('bim_results', json_encode($this->bimResults))
+        ->attach('createdBy', $this->createdBy)
+        ->attach('createdByName', $this->createdByName)
+        ->post($apiUrl);
+
+        Log::info('Joget API response', [
+            'job_id' => $this->jobId,
+            'status' => $response->status(),
+        ]);
 
         $inserted = $response->successful() ? count($payload) : 0;
 
