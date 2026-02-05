@@ -55,6 +55,12 @@ class ProcessExcelInsertJob implements ShouldQueue
 
     public function handle()
     {
+        $apiUrl = env('JOGET_API_URL');
+
+        Log::info('API URL', [
+            'url' => $apiUrl
+        ]);
+        
         Log::info("Parent import job started: {$this->jobId}");
 
         if (!Storage::exists($this->rawPath)) {
