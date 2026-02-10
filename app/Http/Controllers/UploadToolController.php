@@ -321,6 +321,8 @@ class UploadToolController extends Controller
 
     public function exportMapped(Request $request)
     {
+        ini_set('memory_limit', '20000M');
+        set_time_limit(0);     
 
         $validated = $request->validate([
             'rawfile_path' => 'required|string',
