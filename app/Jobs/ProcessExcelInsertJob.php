@@ -87,7 +87,7 @@ class ProcessExcelInsertJob implements ShouldQueue
             'total_chunks' => $totalChunks,
             'completed_chunks' => 0,
             'progress' => 0,
-            'bim_count' => count($this->bimResults) - 1,
+            'bim_count' => count($this->bimResults) - 1, // exclude header row
         ], 600);
 
         foreach ($dataRows->chunk($chunkSize) as $chunk) {
