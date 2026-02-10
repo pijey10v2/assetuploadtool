@@ -135,9 +135,10 @@ class UploadToolController extends Controller
         ->where('asset_table_name', $request->asset_table_name)
         ->first();
 
+        $totalBimCount = count($bimResults) - 1; // exclude header row
         return response()->json([
             'message' => 'Files processed successfully.',
-            'bim_count' => count($bimResults),
+            'bim_count' => $totalBimCount,
             'bim_results' => $bimData, 
             'db_columns' => $dbResponse['columns'] ?? [],
             'raw_columns' => $excelResponse['columns'] ?? [],
@@ -247,6 +248,8 @@ class UploadToolController extends Controller
             'import_batch_no' => $request->import_batch_no,
             'data_id' => $request->data_id,
             'bim_results' => $request->bim_results,
+            'bim_count' => count($request->bim_results) - 1, // exclude header row
+            'mapping_count' => count($request->mappings),
             'mappings' => $request->mappings,
             'createdBy' => $user->email,
             'createdByName' => $user->name,

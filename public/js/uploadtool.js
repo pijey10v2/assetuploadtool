@@ -352,10 +352,17 @@ $(document).ready(function () {
                         clearInterval(polling);
                         spinner.hide();
                         message.text('');
+                        // status.html(`
+                        //     <div class="alert alert-success mt-3 text-center">
+                        //         <strong>Data Successfully Processed and Updated!</strong><br>
+                        //         Inserted: ${data.inserted} / ${data.total} rows<br>
+                        //         <small class="text-muted">Import Batch No: ${window.importBatchNo}</small>
+                        //     </div>
+                        // `);
                         status.html(`
                             <div class="alert alert-success mt-3 text-center">
                                 <strong>Data Successfully Processed and Updated!</strong><br>
-                                Inserted: ${data.inserted} / ${data.total} rows<br>
+                                Total Mapped Data: ${data.bim_count} rows<br>
                                 <small class="text-muted">Import Batch No: ${window.importBatchNo}</small>
                             </div>
                         `);

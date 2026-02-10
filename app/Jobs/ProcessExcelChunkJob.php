@@ -127,6 +127,8 @@ class ProcessExcelChunkJob implements ShouldQueue
                 $progress['progress'] = 100;
             }
 
+            $progress['bim_count'] = count($this->bimResults) - 1;
+
             Cache::put("upload_progress_{$this->jobId}", $progress, 600);
         });
 
