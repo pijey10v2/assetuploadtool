@@ -23,7 +23,7 @@
             <button id="execute-update" type="button" class="btn btn-success btn-sm" disabled>
                 <i class="bi bi-play-circle me-1"></i> Execute Data Update
             </button>
-            <button id="export-mapped" type="button" class="btn btn-dark btn-sm">
+            <button id="export-mapped" type="button" class="btn btn-dark btn-sm" title="Only matched data from the excel raw file and bim file will be exported, also rows from data mapping with null values will be skipped.">
                 <i class="bi bi-download me-1"></i> Export Mapped Data
             </button>
         </div>

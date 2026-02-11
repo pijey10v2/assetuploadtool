@@ -445,6 +445,32 @@ class UploadToolController extends Controller
             // Remove unwanted BIM columns
             unset($mappedRow['ps2'], $mappedRow['ElementId']);
 
+            // Check for required fields
+            $requiredFields = [
+                'c_section',
+                'c_division',
+            ];
+
+            $hasEmptyRequiredField = false;
+
+            foreach ($requiredFields as $field) {
+
+                if (
+                    !isset($mappedRow[$field]) ||          // not set
+                    $mappedRow[$field] === null ||         // null
+                    trim($mappedRow[$field]) === '' ||     // empty string
+                    trim($mappedRow[$field]) === 'NULL'    // literal NULL
+                ) {
+                    $hasEmptyRequiredField = true;
+                    break;
+                }
+            }
+
+            // Skip exporting this row
+            if ($hasEmptyRequiredField) {
+                continue;
+            }
+
             $mappedData[] = $mappedRow;
         }
         
