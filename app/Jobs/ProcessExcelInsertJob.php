@@ -75,7 +75,26 @@ class ProcessExcelInsertJob implements ShouldQueue
         $headerRow = $excel->first()->toArray();
         $dataRows = $excel->skip(1)->map(fn ($r) => $r->toArray());
 
-        $totalRows = $dataRows->count();
+        $filteredRows = $dataRows->filter(function ($row) {
+
+            $row = $row; // already array
+
+            // Required fields indexes 
+            $sectionIndex = array_search('Section (SEC)', $this->mappings_flat ?? []);
+            $divisionIndex = array_search('Division (DIV)', $this->mappings_flat ?? []);
+
+            $section = trim($row[$sectionIndex] ?? '');
+            $division = trim($row[$divisionIndex] ?? '');
+
+            return !(
+                $section === '' || $section === 'NULL' ||
+                $division === '' || $division === 'NULL'
+            );
+        });
+
+        $totalRows = $filteredRows->count();
+
+
         $chunkSize = 300;
         $totalChunks = ceil($totalRows / $chunkSize);
 
@@ -83,11 +102,11 @@ class ProcessExcelInsertJob implements ShouldQueue
             'status' => 'processing',
             'processed' => 0,
             'inserted' => 0,
-            'total' => $totalRows,
+            'total' => 0,
             'total_chunks' => $totalChunks,
             'completed_chunks' => 0,
             'progress' => 0,
-            'bim_count' => count($this->bimResults) - 1, // exclude header row
+            'bim_count' => 0, // exclude header row
         ], 600);
 
         foreach ($dataRows->chunk($chunkSize) as $chunk) {

@@ -68,14 +68,56 @@ class ProcessExcelChunkJob implements ShouldQueue
         }
 
         $payload = [];
+        $validRowCount = 0;
 
         foreach ($this->rows as $row) {
+
             $mapped = [];
 
+            // Map columns
             foreach ($columnIndexMap as $dbCol => $index) {
-                $mapped[$dbCol] = $index !== false ? $row[$index] ?? null : null;
+                $mapped[$dbCol] = $index !== false
+                    ? trim($row[$index] ?? '')
+                    : null;
             }
 
+            // Check for required fields
+            $requiredFields = [
+                'c_section',
+                'c_division',
+            ];
+
+            $hasEmptyRequiredField = false;
+
+            foreach ($requiredFields as $field) {
+                if (
+                    !isset($mapped[$field]) ||
+                    $mapped[$field] === null ||
+                    trim($mapped[$field]) === '' ||
+                    trim($mapped[$field]) === 'NULL'
+                ) {
+                    $hasEmptyRequiredField = true;
+                    break;
+                }
+            }
+
+            if ($hasEmptyRequiredField) {
+                continue; // Skip row
+            }
+
+            // bim match filter
+            $modelElement = trim($mapped['c_model_element'] ?? '');
+
+            $bimMatch = collect($this->bimResults)
+                ->firstWhere('ps2', $modelElement);
+
+            if (!$bimMatch) {
+                continue; // Skip row
+            }
+
+            $mapped['c_element_id'] = $bimMatch['ElementId'] ?? null;
+
+            // project data
             if (!empty($this->projectData)) {
                 $mapped += [
                     'c_package_id'    => $this->projectData['c_package_id'] ?? null,
@@ -86,7 +128,9 @@ class ProcessExcelChunkJob implements ShouldQueue
             }
 
             $payload[] = $mapped;
+            $validRowCount++;
         }
+
 
         // ***content-type SHOULD BE multipart/form-data***
         // content-type: multipart/form-data is ONLY used when you call attach() 
@@ -110,27 +154,35 @@ class ProcessExcelChunkJob implements ShouldQueue
 
         $inserted = $response->successful() ? count($payload) : 0;
 
-        Cache::lock("upload_progress_lock_{$this->jobId}", 10)->block(5, function () use ($inserted) {
+        Cache::lock("upload_progress_lock_{$this->jobId}", 10)->block(5, function () use ($validRowCount) {
+
             $progress = Cache::get("upload_progress_{$this->jobId}");
 
-            $progress['processed'] += count($this->rows);
-            $progress['inserted'] += $inserted;
+            // Add ONLY valid rows
+            $progress['processed'] += $validRowCount;
+            $progress['inserted'] += $validRowCount;
+
+            // Dynamically compute TOTAL valid rows
+            $progress['total'] += $validRowCount;
+
             $progress['completed_chunks']++;
 
-            $progress['progress'] = round(
-                ($progress['processed'] / $progress['total']) * 100,
-                2
-            );
+            // Progress %
+            $progress['progress'] = $progress['total'] > 0
+                ? round(($progress['processed'] / $progress['total']) * 100, 2)
+                : 0;
 
-            if ($progress['processed'] >= $progress['total']) {
+            if ($progress['completed_chunks'] >= $progress['total_chunks']) {
                 $progress['status'] = 'done';
                 $progress['progress'] = 100;
             }
 
-            $progress['bim_count'] = count($this->bimResults) - 1; // exclude header row
+            // BIM count = valid matched rows
+            $progress['bim_count'] = $progress['inserted'];
 
             Cache::put("upload_progress_{$this->jobId}", $progress, 600);
         });
+
 
         Log::info("Chunk completed: {$this->jobId}, rows=" . count($this->rows));
     }
