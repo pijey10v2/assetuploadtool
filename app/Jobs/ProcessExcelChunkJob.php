@@ -61,11 +61,24 @@ class ProcessExcelChunkJob implements ShouldQueue
 
         // Precompute column indexes
         $columnIndexMap = [];
+
         foreach ($this->mappings as $map) {
+
             $dbCol = array_key_first($map);
-            $excelCol = $map[$dbCol];
-            $columnIndexMap[$dbCol] = array_search($excelCol, $this->headerRow);
+            $excelCol = trim($map[$dbCol]);
+
+            $index = null;
+
+            foreach ($this->headerRow as $i => $header) {
+                if (trim($header) === $excelCol) {
+                    $index = $i;
+                    break;
+                }
+            }
+
+            $columnIndexMap[$dbCol] = $index;
         }
+
 
         $payload = [];
         $validRowCount = 0;
@@ -76,9 +89,15 @@ class ProcessExcelChunkJob implements ShouldQueue
 
             // Map columns
             foreach ($columnIndexMap as $dbCol => $index) {
-                $mapped[$dbCol] = $index !== false
-                    ? trim($row[$index] ?? '')
-                    : null;
+                $value = (
+                    $index !== null &&
+                    isset($row[$index]) &&
+                    trim($row[$index]) !== ''
+                )
+                    ? trim($row[$index])
+                    : 'NULL';
+
+                $mapped[$dbCol] = $value;
             }
 
             // Check for required fields
