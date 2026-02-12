@@ -129,10 +129,12 @@ $(document).ready(function () {
                     .addClass('bg-success')
                     .text('Completed');
 
+                let displayCount = formatRecordCount(response.bim_count);
+
                 $('#upload-status').html(`
                     <div class="alert alert-success mt-3">
                         ${response.message}<br>
-                        BIM Rows Found: <strong>${response.bim_count}</strong><br>
+                        BIM Rows Found: <strong>${displayCount}</strong><br>
                         Generated Import Batch No:<br>
                         <strong><code>${response.import_batch_no}</code></strong>
                     </div>
@@ -185,6 +187,32 @@ $(document).ready(function () {
             }
         });
     });
+    
+    // format record count
+    function formatRecordCount(count) {
+        if (count >= 1_000_000) {
+            return '1M+ records found.';
+
+        } else if (count >= 50_000) {
+            return '50K+ records found.';
+
+        } else if (count >= 10_000) {
+            return '10K+ records found.';
+
+        } else if (count >= 1_000) {
+            let rounded = Math.floor(count / 1000) * 1000;
+            return `${rounded.toLocaleString()}+ records found.`;
+
+        } else if (count >= 500) {
+            return '500+ records found.';
+
+        } else if (count >= 100) {
+            return '100+ records found.';
+
+        } else {
+            return `${count}+ records found.`;
+        }
+    }
 
     /**
      * =============================
