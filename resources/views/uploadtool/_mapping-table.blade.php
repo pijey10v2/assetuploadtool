@@ -20,7 +20,7 @@
 
         <!-- Buttons Row -->
         <div class="d-flex justify-content-between mt-3">
-            <button id="execute-update" type="button" class="btn btn-success btn-sm" disabled>
+            <button id="execute-update" type="button" class="btn btn-success btn-sm" title="Only matched data from the excel raw file and bim file will be exported, also rows from data mapping with null values will be skipped." disabled>
                 <i class="bi bi-play-circle me-1"></i> Execute Data Update
             </button>
             <button id="export-mapped" type="button" class="btn btn-dark btn-sm" title="Only matched data from the excel raw file and bim file will be exported, also rows from data mapping with null values will be skipped.">

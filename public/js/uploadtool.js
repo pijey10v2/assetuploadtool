@@ -205,46 +205,84 @@ $(document).ready(function () {
         }
 
         dbCols.forEach(dbCol => {
-            // Check if column is locked (for c_model_element)
-            const isLocked = dbCol === 'c_model_element';
-            const defaultValue = isLocked ? 'Element ID' : '';
 
-            // Determine pre-selected value from recent mapping
-            const mappedExcelCol = recentMapping[dbCol] || (isLocked ? defaultValue : '');
+            // Mapping rules
+            const lockedMappings = {
+                'c_model_element': 'Element ID'   // Disabled
+            };
 
-            // Filter out "Element ID" from other dropdowns
-            const availableOptions = isLocked 
-                ? excelCols 
+            const autoMappings = {
+                'c_division': 'Division (DIV)',  // Auto-set but editable
+                'c_section': 'Section (SEC)'
+            };
+
+            // Determine states
+            const isLocked = lockedMappings.hasOwnProperty(dbCol);
+            const autoValue =
+                lockedMappings[dbCol] ||
+                autoMappings[dbCol] ||
+                '';
+
+            // Determine mapped value priority:
+            // 1. recent mapping
+            // 2. auto value
+            const mappedExcelCol =
+                recentMapping[dbCol] ||
+                autoValue;
+
+            // Filter options
+            const availableOptions = isLocked
+                ? excelCols
                 : excelCols.filter(col => col !== 'Element ID');
 
-            // Generate options (keep preselected if it exists)
-            const options = availableOptions
-                .map(col => `
-                    <option value="${col}" ${col === mappedExcelCol ? 'selected' : ''}>${col}</option>
-                `)
-                .join('');
+            // Generate options
+            const options = availableOptions.map(col => `
+                <option value="${col}"
+                    ${col === mappedExcelCol ? 'selected' : ''}>
+                    ${col}
+                </option>
+            `).join('');
 
-            // Add table row
+            // Row render
             tbody.append(`
                 <tr ${isLocked ? 'class="table-light"' : ''}>
                     <td>
-                        <input type="text" class="form-control db-col-input"
-                            value="${dbCol}" readonly>
+                        <input type="text"
+                            class="form-control db-col-input"
+                            value="${dbCol}"
+                            readonly>
                     </td>
+
                     <td>
                         <select class="form-select excel-column-select"
-                                data-dbcol="${dbCol}" ${isLocked ? 'disabled' : ''}>
+                                data-dbcol="${dbCol}"
+                                ${isLocked ? 'disabled' : ''}>
+
                             <option value="">-- Select Excel Column --</option>
                             ${options}
                         </select>
+
                         ${isLocked ? `
-                            <input type="hidden" name="locked_mapping_${dbCol}" value="${defaultValue}">
-                            <small class="text-muted">Auto-mapped to "${defaultValue}"</small>
+                            <input type="hidden"
+                                name="locked_mapping_${dbCol}"
+                                value="${autoValue}">
+                            <small class="text-muted">
+                                Auto-mapped to "${autoValue}"
+                            </small>
                         ` : ''}
+
+                        ${
+                            (!isLocked && autoMappings[dbCol]) ? `
+                                <small class="text-muted">
+                                    Default: "${autoMappings[dbCol]}"
+                                </small>
+                            ` : ''
+                        }
                     </td>
                 </tr>
             `);
         });
+
 
         // Initialize Select2 (reset any existing instances first)
         $('.excel-column-select').each(function () {
