@@ -143,6 +143,8 @@ class UploadToolController extends Controller
             'db_columns' => $dbResponse['columns'] ?? [],
             'raw_columns' => $excelResponse['columns'] ?? [],
             'rawfile_mapping' => $rawfile_mapping,
+            'rawfile_rows' => $dataRows,
+            'rawfile_count' => count($dataRows),
             'rawfile_path' => $rawPath, // Make sure this exists
             'raw_filename' => $rawFileName,
             'recent_mapping' => $recentMapping ? $recentMapping->mappings : null, // include previous mapping

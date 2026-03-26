@@ -120,6 +120,8 @@ $(document).ready(function () {
                 window.dataId = $('#data_id').val();
                 window.assetTableName = $('#asset_table_name').val();
                 window.excelColumns = response.raw_columns || [];
+                window.excelRows = response.rawfile_rows || [];
+                window.excelRowCount = response.rawfile_count;
                 window.bimResults = response.bim_results || [];
                 window.createdBy = response.createdBy;
                 window.createdByName = response.createdByName;
@@ -421,7 +423,9 @@ $(document).ready(function () {
                         status.html(`
                             <div class="alert alert-success mt-3 text-center">
                                 <strong>Data Successfully Processed and Updated!</strong><br>
-                                Total Mapped Data: ${data.total} rows<br>
+                                i.BIM File Total Rows: ${data.bim_count}<br>
+                                Excel Raw File Total Rows: ${window.excelRowCount}<br>
+                                Total Processed Data: ${data.total} rows (Matched Element IDs only)<br>
                                 <small class="text-muted">Import Batch No: ${window.importBatchNo}</small>
                             </div>
                         `);
