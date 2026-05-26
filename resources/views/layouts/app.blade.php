@@ -136,11 +136,29 @@
                                     Upload i.BIM
                                 </a>
                             </li>
-                            <li class="nav-item">
+                            <li class="nav-item dropdown">
                                 <!-- request()->is('uploadtool*') - Matches any URL starting with /uploadtool e.g. /uploadtool or /uploadtool/execute -->
-                                <a class="nav-link {{ request()->is('uploadtool*') ? 'active' : '' }}" href="{{ route('uploadtool') }}">
+                                <a class="nav-link dropdown-toggle 
+                                    {{ request()->is('uploadtool*') ? 'active' : '' }}" 
+                                    href="#" 
+                                    data-bs-toggle="dropdown">
                                     Upload Tool
                                 </a>
+
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <a class="dropdown-item {{ request('type') == 'default' ? 'active' : '' }}" 
+                                        href="{{ route('uploadtool', ['type' => 'default']) }}">
+                                            Upload Tool
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item {{ request('type') == 'cobie' ? 'active' : '' }}" 
+                                        href="{{ route('uploadtool', ['type' => 'cobie']) }}">
+                                            Upload Tool (Cobie)
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                         @endauth
                     </ul>
