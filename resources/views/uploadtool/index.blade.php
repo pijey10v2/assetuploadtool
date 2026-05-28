@@ -31,7 +31,7 @@
                 exportMapped: "{{ url('/uploadtool/export-mapped') }}"
             },
             api: {
-                getAllTables: "{{ env('API_GET_ALL_TABLES_URL') }}",
+                getAllTables: "{!! env('API_GET_ALL_TABLES_URL') . '&type=' . request('type', 'default') !!}", //blade's unescaped syntax
                 getProjects: "{{ route('api.projects') }}",
                 getLayersByProject: "{{ url('/dropdown/layers') }}" // base URL, append project ID in JS
             }
