@@ -58,6 +58,7 @@
         <!-- Asset Table -->
         <div class="mb-3">
             <label for="asset_table_name" class="form-label">Asset Table <span class="text-danger">*</span></label>
+            <input type="hidden" name="type" value="{{ request('type') }}"> <!-- default, cobie -->
             <select class="form-select" id="asset_table_name" name="asset_table_name" required>
                 <option selected disabled><span class="spinner-border spinner-border-sm"></span> Loading...</option>
             </select>
