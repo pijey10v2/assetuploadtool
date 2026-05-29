@@ -125,6 +125,7 @@ $(document).ready(function () {
                 window.bimResults = response.bim_results || [];
                 window.createdBy = response.createdBy;
                 window.createdByName = response.createdByName;
+                window.type = $('#type').val();
 
                 $('#progress-bar')
                     .removeClass('bg-info progress-bar-striped progress-bar-animated')
@@ -387,6 +388,7 @@ $(document).ready(function () {
                 bim_results: window.bimResults,
                 createdBy: window.createdBy,
                 createdByName: window.createdByName,
+                type: window.type,
             },
             success: function (response) {
                 // Begin polling job progress
@@ -493,6 +495,7 @@ $(document).ready(function () {
                     data_id: window.dataId,
                     asset_table_name: window.assetTableName,
                     import_batch_no: window.importBatchNo,
+                    type: window.type,
                 },
                 success: function (blob, status, xhr) {
                     const filename = xhr.getResponseHeader('Content-Disposition')

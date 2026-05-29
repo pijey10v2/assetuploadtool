@@ -118,7 +118,8 @@ class UploadToolController extends Controller
             'import_batch_no' => $request->import_batch_no,
             'data_id' => $request->data_id,
             'asset_table_name' => $request->asset_table_name,
-            'mode' => 'get_table_columns'
+            'mode' => 'get_table_columns',
+            'type' => $request->type, //default, cobie
         ])->json();
 
         // Get excel columns (mapping)
@@ -149,6 +150,7 @@ class UploadToolController extends Controller
             'raw_filename' => $rawFileName,
             'recent_mapping' => $recentMapping ? $recentMapping->mappings : null, // include previous mapping
             'import_batch_no' => $request->import_batch_no,
+            'type' => $request->type, //default, cobie
         ]);
     }
 
@@ -239,7 +241,8 @@ class UploadToolController extends Controller
             $request->bim_results,
             $user->email,     // createdBy
             $user->name       // createdByName
-            , $projectData
+            , $projectData,
+            $request->type, //default, cobie
         );
 
         return response()->json([
@@ -256,6 +259,7 @@ class UploadToolController extends Controller
             'createdBy' => $user->email,
             'createdByName' => $user->name,
             'project_data' => $projectData,
+            'type' => $request->type, //default, cobie
         ]);
     }
 
@@ -448,10 +452,14 @@ class UploadToolController extends Controller
             unset($mappedRow['ps2'], $mappedRow['ElementId']);
 
             // Check for required fields
-            $requiredFields = [
-                'c_section',
-                'c_division',
-            ];
+            $requiredFields = [];
+
+            if ($request->type !== 'cobie') {
+                $requiredFields = [
+                    'c_section',
+                    'c_division',
+                ];
+            }
 
             $hasEmptyRequiredField = false;
 

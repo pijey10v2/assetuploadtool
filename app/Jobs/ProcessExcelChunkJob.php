@@ -28,6 +28,7 @@ class ProcessExcelChunkJob implements ShouldQueue
     protected $createdBy;
     protected $createdByName;
     protected $projectData;
+    protected $type;
 
     public function __construct(
         $jobId,
@@ -40,7 +41,8 @@ class ProcessExcelChunkJob implements ShouldQueue
         $bimResults,
         $createdBy,
         $createdByName,
-        $projectData
+        $projectData,
+        $type
     ) {
         $this->jobId = $jobId;
         $this->rows = $rows;
@@ -53,6 +55,7 @@ class ProcessExcelChunkJob implements ShouldQueue
         $this->createdBy = $createdBy;
         $this->createdByName = $createdByName;
         $this->projectData = $projectData;
+        $this->type = $type; //default, cobie
     }
 
     public function handle()
@@ -101,10 +104,14 @@ class ProcessExcelChunkJob implements ShouldQueue
             }
 
             // Check for required fields
-            $requiredFields = [
-                'c_section',
-                'c_division',
-            ];
+            $requiredFields = [];
+
+            if ($this->type !== 'cobie') {
+                $requiredFields = [
+                    'c_section',
+                    'c_division',
+                ];
+            }
 
             $hasEmptyRequiredField = false;
 
@@ -164,6 +171,7 @@ class ProcessExcelChunkJob implements ShouldQueue
         ->attach('bim_results', json_encode($this->bimResults))
         ->attach('createdBy', $this->createdBy)
         ->attach('createdByName', $this->createdByName)
+        ->attach('type', $this->type) //default, cobie
         ->post($apiUrl);
 
         Log::info('Joget API response', [

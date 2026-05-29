@@ -28,6 +28,7 @@ class ProcessExcelInsertJob implements ShouldQueue
     protected $createdBy;
     protected $createdByName;
     protected $projectData;
+    protected $type;
 
     public function __construct(
         $jobId,
@@ -39,7 +40,8 @@ class ProcessExcelInsertJob implements ShouldQueue
         $bimResults,
         $createdBy,
         $createdByName,
-        $projectData
+        $projectData,
+        $type
     ) {
         $this->jobId = $jobId;
         $this->rawPath = $rawPath;
@@ -51,6 +53,7 @@ class ProcessExcelInsertJob implements ShouldQueue
         $this->createdBy = $createdBy;
         $this->createdByName = $createdByName;
         $this->projectData = $projectData;
+        $this->type = $type;
     }
 
     public function handle()
@@ -121,7 +124,8 @@ class ProcessExcelInsertJob implements ShouldQueue
                 $this->bimResults,
                 $this->createdBy,
                 $this->createdByName,
-                $this->projectData
+                $this->projectData,
+                $this->type, //default/ cobie
             );
         }
 
