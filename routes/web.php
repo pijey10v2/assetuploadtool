@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UploadToolController;
 use App\Http\Controllers\FileBrowserController;
 use App\Http\Controllers\BimUploadController;
+use App\Http\Controllers\HierarchyController;
 
 // Breeze provides built-in auth routes (login, register, etc.)
 require __DIR__.'/auth.php';
@@ -82,6 +83,10 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/projects', [UploadToolController::class, 'getProjects'])->name('api.projects');
         // Dropdown list for layers (data id) based on selected projects.project id
         Route::get('/layers/{projectId}', [UploadToolController::class, 'getLayersByProject'])->name('api.layers.byProject');
+    });
+
+    Route::prefix('hierarchy')->group(function () {
+        Route::get('/setupHierarchy', [HierarchyController::class, 'index'])->name('setupHierarchy');
     });
 
 });

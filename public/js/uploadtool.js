@@ -422,15 +422,30 @@ $(document).ready(function () {
                         clearInterval(polling);
                         spinner.hide();
                         message.text('');
+
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const type = urlParams.get('type');
+
+                        const batchDisplay = type === 'cobie'
+                            ? `<a href="/hierarchy/setupHierarchy?import_batch=${window.importBatchNo}"
+                                target="_blank"
+                                class="text-primary fw-bold text-decoration-none">
+                                Import Batch No: ${window.importBatchNo}
+                            </a>`
+                            : `<small class="text-muted">
+                                Import Batch No: ${window.importBatchNo}
+                            </small>`;
+
                         status.html(`
                             <div class="alert alert-success mt-3 text-center">
                                 <strong>Data Successfully Processed and Updated!</strong><br>
                                 i.BIM File Total Rows: ${data.bim_count}<br>
                                 Excel Raw File Total Rows: ${window.excelRowCount}<br>
                                 Total Processed Data: ${data.total} rows (Matched Element IDs only)<br>
-                                <small class="text-muted">Import Batch No: ${window.importBatchNo}</small>
+                                ${batchDisplay}
                             </div>
                         `);
+                        
                         button.prop('disabled', false).html('<i class="bi bi-play-circle me-1"></i> Execute Data Update');
                     }
 
