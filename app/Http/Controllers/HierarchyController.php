@@ -23,6 +23,51 @@ class HierarchyController extends Controller
         // Use $importBatch as needed
         return view('hierarchy.setupHierarchy', compact('importBatch'));
     }
+
+    public function getHierarchyData()
+    {
+        $response = Http::get(
+            env('JOGET_API_URL'),
+            [
+                'mode' => 'get_asset_hierarchy',
+                'type' => 'cobie'
+            ]
+        );
+
+        return response()->json(
+            $response->json()
+        );
+    }
+
+    public function getLevel1()
+    {
+        $response = Http::get(
+            env('JOGET_API_URL'),
+            [
+                'mode' => 'get_hierarchylevel_1',
+                'type' => 'cobie'
+            ]
+        );
+
+        return response()->json(
+            $response->json()
+        );
+    }
+
+    public function saveMapping(Request $request)
+    {
+        $response = Http::asForm()->post(
+            env('JOGET_API_URL'),
+            [
+                'mode' => 'update_hierarchy_mapping',
+                'mappings' => json_encode($request->mappings)
+            ]
+        );
+
+        return response()->json(
+            $response->json()
+        );
+    }
 }
 
 ?>
