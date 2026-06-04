@@ -51,8 +51,9 @@
                     <table class="table table-bordered table-striped" id="mappingTable">
                         <thead class="table-light">
                         <tr>
+                            <th>ID</th>
                             <th>Element ID</th>
-                            <th>Level</th>
+                            <th>Item No.</th>
                             <th width="220">Level 2</th>
                             <th width="220">Level 3</th>
                             <th width="220">Level 4</th>
@@ -71,6 +72,7 @@
 $(document).ready(function () {
 
     let hierarchyData = [];
+    let hierarchyMaster = [];
     let level1Data = [];
 
     // Load Level 1 dropdown data
@@ -79,6 +81,18 @@ $(document).ready(function () {
         level1Data = response.hierarchies || [];
 
         loadLevel1Dropdown();
+
+    });
+
+    // Load ALL hierarchy data
+    $.get('/hierarchy/get-hierarchy-all', function(response){
+
+        hierarchyMaster = response.assets || [];
+
+        console.log(
+            'Hierarchy Master Loaded:',
+            hierarchyMaster.length
+        );
 
     });
 
@@ -124,8 +138,9 @@ $(document).ready(function () {
 
             let row = `
             <tr data-id="${asset.id}">
+                <td>${asset.id ?? ''}</td>
                 <td>${asset.c_element_id ?? ''}</td>
-                <td>${asset.c_level ?? ''}</td>
+                <td>${asset.c_item_no ?? ''}</td>
 
                 <td>
                     <select class="form-select level2">
@@ -151,7 +166,6 @@ $(document).ready(function () {
 
         });
 
-        //populateLevel1();
     }
 
     function loadLevel1Dropdown()
@@ -177,24 +191,11 @@ $(document).ready(function () {
 
         const level1Id = $(this).val();
 
-        const children = getChildren(level1Id);
-
-        $('.level2').each(function(){
-
-            populateDropdown(
-                $(this),
-                children
-            );
-
-        });
-
-    });
-
-    $('#globalLevel1').on('change', function(){
-
-        const level1Id = $(this).val();
+        console.log('Level1 ID:', level1Id);
 
         const children = getChildren(level1Id);
+
+        console.log(children);
 
         $('.level2').each(function(){
 
@@ -214,8 +215,8 @@ $(document).ready(function () {
 
     function getChildren(parentId)
     {
-        return hierarchyData.filter(item =>
-            item.c_parent_id === parentId
+        return hierarchyMaster.filter(item =>
+            item.c_parent_id == parentId
         );
     }
 
@@ -290,6 +291,11 @@ $(document).ready(function () {
             const level3 = $(this).find('.level3').val();
             const level4 = $(this).find('.level4').val();
 
+            // ONLY rows with selected hierarchy
+            if (!level2 && !level3 && !level4) {
+                return;
+            }
+
             mappings.push({
                 id: $(this).data('id'),
 
@@ -307,6 +313,8 @@ $(document).ready(function () {
             });
 
         });
+
+        console.log(mappings.length);
 
         $.ajax({
 

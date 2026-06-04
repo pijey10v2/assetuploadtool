@@ -39,6 +39,21 @@ class HierarchyController extends Controller
         );
     }
 
+    public function getHierarchyDataAll()
+    {
+        $response = Http::get(
+            env('JOGET_API_URL'),
+            [
+                'mode' => 'get_asset_hierarchy_all',
+                'type' => 'cobie'
+            ]
+        );
+
+        return response()->json(
+            $response->json()
+        );
+    }
+
     public function getLevel1()
     {
         $response = Http::get(
@@ -56,17 +71,27 @@ class HierarchyController extends Controller
 
     public function saveMapping(Request $request)
     {
-        $response = Http::asForm()->post(
-            env('JOGET_API_URL'),
-            [
-                'mode' => 'update_hierarchy_mapping',
-                'mappings' => json_encode($request->mappings)
-            ]
-        );
+        \Log::info([
+            'mapping_count' => count($request->mappings ?? [])
+        ]);
 
-        return response()->json(
-            $response->json()
-        );
+        $response = Http::timeout(300)
+            ->asForm()
+            ->post(
+                env('JOGET_API_URL'),
+                [
+                    'mode' => 'update_hierarchy_mapping',
+                    'mappings' => json_encode(
+                        $request->mappings
+                    )
+                ]
+            );
+
+        return response()->json([
+            'status_code' => $response->status(),
+            'raw' => $response->body(),
+            'json' => $response->json()
+        ]);
     }
 }
 
