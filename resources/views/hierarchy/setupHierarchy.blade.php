@@ -53,6 +53,7 @@
                         <tr>
                             <th>ID</th>
                             <th>Element ID</th>
+                            <th>Level</th>
                             <th>Item No.</th>
                             <th width="220">Level 2</th>
                             <th width="220">Level 3</th>
@@ -140,6 +141,7 @@ $(document).ready(function () {
             <tr data-id="${asset.id}">
                 <td>${asset.id ?? ''}</td>
                 <td>${asset.c_element_id ?? ''}</td>
+                <td>${asset.c_level ?? ''}</td>
                 <td>${asset.c_item_no ?? ''}</td>
 
                 <td>

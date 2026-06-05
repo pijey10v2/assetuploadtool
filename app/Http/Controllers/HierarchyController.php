@@ -93,6 +93,26 @@ class HierarchyController extends Controller
             'json' => $response->json()
         ]);
     }
+
+    public function recentImports()
+    {
+        $response = Http::get(
+            env('JOGET_API_URL'),
+            [
+                'mode' => 'get_recent_importbatch_nos',
+                'type' => 'cobie'
+            ]
+        );
+
+        $data = $response->json();
+
+        return view(
+            'hierarchy.recentImports',
+            [
+                'imports' => $data['assets'] ?? []
+            ]
+        );
+    }
 }
 
 ?>

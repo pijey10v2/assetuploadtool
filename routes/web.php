@@ -91,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/get-hierarchy-all', [HierarchyController::class, 'getHierarchyDataAll']);
         Route::get('/get-level1', [HierarchyController::class, 'getLevel1']);
         Route::post('/save-mapping', [HierarchyController::class, 'saveMapping']);
+        Route::get('/recent-imports', [HierarchyController::class, 'recentImports']);
     });
 
 });

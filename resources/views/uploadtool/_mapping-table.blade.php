@@ -1,6 +1,24 @@
 <div class="card mt-4 shadow-sm">
-    <div class="card-header fw-bold bg-white">
-        <i class="bi bi-diagram-3 text-primary me-2"></i> Column Mapping
+    <div class="card-header bg-white">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <div class="fw-bold">
+                <i class="bi bi-diagram-3 text-primary me-2"></i>
+                Column Mapping
+            </div>
+
+            @if(request('type') === 'cobie')
+                <a
+                    href="{{ url('/hierarchy/recent-imports') }}"
+                    class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-clock-history me-1"></i>
+                    Recent Uploads
+                </a>
+            @endif
+
+        </div>
+
     </div>
 
     <div class="card-body">
