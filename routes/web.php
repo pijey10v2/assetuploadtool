@@ -87,10 +87,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('hierarchy')->group(function () {
         Route::get('/setupHierarchy', [HierarchyController::class, 'index'])->name('setupHierarchy');
-        Route::get('/get-data', [HierarchyController::class, 'getHierarchyData']);
-        Route::get('/get-hierarchy-all', [HierarchyController::class, 'getHierarchyDataAll']);
-        Route::get('/get-level1', [HierarchyController::class, 'getLevel1']);
-        Route::post('/save-mapping', [HierarchyController::class, 'saveMapping']);
+        Route::get('/get-data', [HierarchyController::class, 'getHierarchyData'])->name('hierarchy.get-hierarchy-data');
+        Route::get('/get-hierarchy-all', [HierarchyController::class, 'getHierarchyDataAll'])->name('hierarchy.get-hierarchy-all');
+        Route::get('/get-level1', [HierarchyController::class, 'getLevel1'])->name('hierarchy.get-level1');
+        Route::post('/save-mapping', [HierarchyController::class, 'saveMapping'])->name('hierarchy.save-mapping');
         Route::get('/recent-imports', [HierarchyController::class, 'recentImports']);
     });
 

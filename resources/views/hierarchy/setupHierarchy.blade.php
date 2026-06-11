@@ -70,6 +70,14 @@
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+window.routes = {
+    getLevel1: "{{ route('hierarchy.get-level1') }}",
+    getHierarchyAll: "{{ route('hierarchy.get-hierarchy-all') }}",
+    getHierarchyData: "{{ route('hierarchy.get-hierarchy-data') }}",
+    saveMapping: "{{ route('hierarchy.save-mapping') }}",
+};
+</script>
+<script>
 $(document).ready(function () {
 
     let hierarchyData = [];
@@ -81,7 +89,7 @@ $(document).ready(function () {
     let assetLoaded = false;
 
     // Load Level 1 dropdown data
-    $.get('/hierarchy/get-level1', function(response){
+    $.get(window.routes.getLevel1, function(response){
 
         level1Data = response.hierarchies || [];
 
@@ -90,7 +98,7 @@ $(document).ready(function () {
     });
 
     // Load ALL hierarchy data
-    $.get('/hierarchy/get-hierarchy-all', function(response){
+    $.get(window.routes.getHierarchyAll, function(response){
 
         hierarchyMaster = response.assets || [];
 
@@ -122,7 +130,7 @@ $(document).ready(function () {
         $('#mappingTable').hide();
 
         $.ajax({
-            url: '/hierarchy/get-data',
+            url: window.routes.getHierarchyData,
             type: 'GET',
 
             success: function(response)
@@ -621,7 +629,7 @@ $(document).ready(function () {
 
         $.ajax({
 
-            url: '/hierarchy/save-mapping',
+            url: window.routes.saveMapping,
 
             type: 'POST',
 

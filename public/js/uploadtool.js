@@ -427,7 +427,7 @@ $(document).ready(function () {
                         const type = urlParams.get('type');
 
                         const batchDisplay = type === 'cobie'
-                            ? `<a href="/hierarchy/setupHierarchy?import_batch=${window.importBatchNo}"
+                            ? `<a href="${window.setupHierarchyUrl}?import_batch=${window.importBatchNo}"
                                 target="_blank"
                                 class="text-primary fw-bold text-decoration-none">
                                 Import Batch No: ${window.importBatchNo}
