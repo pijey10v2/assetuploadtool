@@ -24,13 +24,16 @@ class HierarchyController extends Controller
         return view('hierarchy.setupHierarchy', compact('importBatch'));
     }
 
-    public function getHierarchyData()
+    public function getHierarchyData(Request $request)
     {
+        $importBatch = $request->import_batch;
+
         $response = Http::get(
             env('JOGET_API_URL'),
             [
                 'mode' => 'get_asset_hierarchy',
-                'type' => 'cobie'
+                'type' => 'cobie',
+                'import_batch' => $importBatch
             ]
         );
 

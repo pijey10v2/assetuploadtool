@@ -129,9 +129,15 @@ $(document).ready(function () {
         $('#tableLoading').removeClass('d-none');
         $('#mappingTable').hide();
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const importBatch = urlParams.get('import_batch');
+
         $.ajax({
             url: window.routes.getHierarchyData,
             type: 'GET',
+            data: {
+                import_batch: importBatch
+            },
 
             success: function(response)
             {
@@ -174,6 +180,10 @@ $(document).ready(function () {
             window.selectedLevel1AfterSave = null;
         }
     }
+    function getChildren(parentId)
+    {
+        return hierarchyLookup[parentId] || [];
+    }
     function buildTable()
     {
         let tbody = $('#mappingTable tbody');
@@ -187,9 +197,15 @@ $(document).ready(function () {
             html += `
             <tr
                 data-id="${asset.id}"
+
+                data-keywords="${asset.c_keywords || ''}"
+
                 data-level1="${asset.c_level1_id || asset.c_matched_level1_id || ''}"
+
                 data-level2="${asset.c_level2_id || asset.c_matched_level2_id || ''}"
+
                 data-level3="${asset.c_level3_id || asset.c_matched_level3_id || ''}"
+
                 data-level4="${asset.c_level4_id || asset.c_matched_level4_id || ''}"
             >
                 <td>${asset.id ?? ''}</td>
@@ -372,34 +388,199 @@ $(document).ready(function () {
 
         const level1Id = $(this).val();
 
+        if(!level1Id){
+            return;
+        }
+
         const level2Children =
             getChildren(level1Id);
+
+        console.log(
+            'Level1:',
+            level1Id,
+            level2Children
+        );
 
         $('#mappingTable tbody tr').each(function(){
 
             let row = $(this);
 
-            // Skip rows that already have values
-            if(
-                row.find('.level2').val() ||
-                row.find('.level3').val() ||
-                row.find('.level4').val()
-            ){
-                return;
-            }
+            let level2Select =
+                row.find('.level2');
 
+            let existingLevel2 =
+                row.attr('data-level2');
+
+            let existingLevel3 =
+                row.attr('data-level3');
+
+            let existingLevel4 =
+                row.attr('data-level4');
+
+            // ALWAYS populate Level2 dropdown
             populateDropdown(
-                row.find('.level2'),
+                level2Select,
                 level2Children
             );
 
-            row.find('.level3').html(
-                '<option value="">Select Level 3</option>'
-            );
 
-            row.find('.level4').html(
-                '<option value="">Select Level 4</option>'
-            );
+            // RESTORE EXISTING LEVEL2
+            if(
+                existingLevel2 &&
+                level2Select.find(
+                    'option[value="' +
+                    existingLevel2 +
+                    '"]'
+                ).length
+            ){
+                level2Select.val(
+                    existingLevel2
+                );
+
+
+                // RESTORE LEVEL3
+                let level3Children =
+                    getChildren(
+                        existingLevel2
+                    );
+
+                populateDropdown(
+                    row.find('.level3'),
+                    level3Children
+                );
+
+                if(
+                    existingLevel3 &&
+                    row.find(
+                        '.level3 option[value="' +
+                        existingLevel3 +
+                        '"]'
+                    ).length
+                ){
+                    row.find('.level3')
+                        .val(existingLevel3);
+                }
+
+                // RESTORE LEVEL4
+
+                let level4Children =
+                    getChildren(
+                        existingLevel3
+                    );
+
+                populateDropdown(
+                    row.find('.level4'),
+                    level4Children
+                );
+
+                if(
+                    existingLevel4 &&
+                    row.find(
+                        '.level4 option[value="' +
+                        existingLevel4 +
+                        '"]'
+                    ).length
+                ){
+                    row.find('.level4')
+                        .val(existingLevel4);
+                }
+
+                return;
+            }
+
+
+            // AUTO MATCH ONLY IF NO LEVEL2
+            let keywords =
+                row.data('keywords') || '';
+
+            let bestLevel2 =
+                findBestMatch(
+                    keywords,
+                    getChildren(level1Id)
+                );
+
+            if(bestLevel2)
+            {
+                level2Select.val(bestLevel2.id);
+
+                row.attr(
+                    'data-level2',
+                    bestLevel2.id
+                );
+
+                row.data(
+                    'level2',
+                    bestLevel2.id
+                );
+
+                
+                // LEVEL 3 AUTO MATCH
+                let level3Children =
+                    getChildren(
+                        bestLevel2.id
+                    );
+
+                populateDropdown(
+                    row.find('.level3'),
+                    level3Children
+                );
+
+                let bestLevel3 =
+                    findBestMatch(
+                        keywords,
+                        level3Children
+                    );
+
+                if(bestLevel3)
+                {
+                    row.find('.level3')
+                        .val(bestLevel3.id);
+
+                    row.attr(
+                        'data-level3',
+                        bestLevel3.id
+                    );
+
+                    row.data(
+                        'level3',
+                        bestLevel3.id
+                    );
+
+                    
+                    // LEVEL 4 AUTO MATCH
+                    let level4Children =
+                        getChildren(
+                            bestLevel3.id
+                        );
+
+                    populateDropdown(
+                        row.find('.level4'),
+                        level4Children
+                    );
+
+                    let bestLevel4 =
+                        findBestMatch(
+                            keywords,
+                            level4Children
+                        );
+
+                    if(bestLevel4)
+                    {
+                        row.find('.level4')
+                            .val(bestLevel4.id);
+
+                        row.attr(
+                            'data-level4',
+                            bestLevel4.id
+                        );
+
+                        row.data(
+                            'level4',
+                            bestLevel4.id
+                        );
+                    }
+                }
+            }
 
         });
 
@@ -409,14 +590,109 @@ $(document).ready(function () {
     {
         return hierarchyLookup[parentId] || [];
     }
+    function findBestMatch(
+        keywords,
+        candidates
+    )
+    {
+        let bestMatch = null;
+        let bestScore = 0;
 
+        keywords =
+            (keywords || '')
+            .toLowerCase();
+
+        candidates.forEach(item => {
+
+            let score = 0;
+
+            let searchableText =
+                (
+                    item.c_asset_name +
+                    ',' +
+                    (item.c_keywords || '')
+                )
+                .toLowerCase();
+
+            let words =
+                searchableText.split(',');
+
+            words.forEach(word => {
+
+                word = word.trim();
+
+                if(
+                    word &&
+                    keywords.includes(word)
+                ){
+                    score++;
+                }
+            });
+
+            if(score > bestScore)
+            {
+                bestScore = score;
+                bestMatch = item;
+            }
+        });
+
+        return bestMatch;
+    }
+    function findBestMatch(
+        keywords,
+        candidates
+    )
+    {
+        let bestMatch = null;
+        let bestScore = 0;
+
+        keywords =
+            (keywords || '')
+            .toLowerCase();
+
+        candidates.forEach(item => {
+
+            let score = 0;
+
+            let itemKeywords =
+                (
+                    item.c_keywords ||
+                    item.c_asset_name ||
+                    ''
+                )
+                .toLowerCase()
+                .split(',');
+
+            itemKeywords.forEach(keyword => {
+
+                keyword = keyword.trim();
+
+                if(
+                    keyword &&
+                    keywords.includes(keyword)
+                ){
+                    score++;
+                }
+            });
+
+            if(score > bestScore)
+            {
+                bestScore = score;
+                bestMatch = item;
+            }
+        });
+
+        return bestMatch;
+    }
     function populateDropdown(select, children)
     {
         select.empty();
 
-        select.append(
-            '<option value="">Select</option>'
-        );
+        select.append(`
+            <option value="">
+                Select
+            </option>
+        `);
 
         children.forEach(item => {
 
@@ -427,6 +703,11 @@ $(document).ready(function () {
             `);
 
         });
+
+        console.log(
+            'Dropdown populated:',
+            children.length
+        );
     }
 
    $(document).on(
@@ -544,38 +825,6 @@ $(document).ready(function () {
         let mappings = [];
 
         $('#mappingTable tbody tr').each(function () {
-
-            // const level2 =
-            //     $(this).data('level2')
-            //     || $(this).find('.level2').val();
-
-            // const level3 =
-            //     $(this).data('level3')
-            //     || $(this).find('.level3').val();
-
-            // const level4 =
-            //     $(this).data('level4')
-            //     || $(this).find('.level4').val();
-            // // ONLY rows with selected hierarchy
-            // if (!level2 && !level3 && !level4) {
-            //     return;
-            // }
-
-            // mappings.push({
-            //     id: $(this).data('id'),
-
-            //     level1_id: level1Id,
-            //     level1_name: level1Name,
-
-            //     level2_id: level2,
-            //     level2_name: $(this).find('.level2 option:selected').text(),
-
-            //     level3_id: level3,
-            //     level3_name: $(this).find('.level3 option:selected').text(),
-
-            //     level4_id: level4,
-            //     level4_name: $(this).find('.level4 option:selected').text()
-            // });
 
             const level2 =
                 $(this).data('level2')
