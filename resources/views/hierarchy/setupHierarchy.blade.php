@@ -150,7 +150,6 @@ $(document).ready(function () {
 
             error: function(err)
             {
-                console.error(err);
                 alert('Unable to load hierarchy data.');
             },
 
@@ -253,15 +252,6 @@ $(document).ready(function () {
             let level2 = row.data('level2');
             let level3 = row.data('level3');
             let level4 = row.data('level4');
-
-            console.log(
-                'Row:',
-                row.data('id'),
-                level1,
-                level2,
-                level3,
-                level4
-            );
 
             if(!level1){
                 return;
@@ -394,12 +384,6 @@ $(document).ready(function () {
 
         const level2Children =
             getChildren(level1Id);
-
-        console.log(
-            'Level1:',
-            level1Id,
-            level2Children
-        );
 
         $('#mappingTable tbody tr').each(function(){
 
@@ -703,11 +687,6 @@ $(document).ready(function () {
             `);
 
         });
-
-        console.log(
-            'Dropdown populated:',
-            children.length
-        );
     }
 
    $(document).on(
@@ -803,6 +782,19 @@ $(document).ready(function () {
         }
     );
 
+    async function saveBatch(batch)
+    {
+        return $.ajax({
+            url: window.routes.saveMapping,
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                _token: '{{ csrf_token() }}',
+                mappings: batch
+            })
+        });
+    }
+
     $('#btnSaveMapping').on('click', function () {
 
         const button = $(this);
@@ -874,22 +866,44 @@ $(document).ready(function () {
 
         });
 
-        console.log(mappings.length);
+        //mappings = mappings.slice(0, 20);
 
-        $.ajax({
+        console.log(
+            'Mappings Count:',
+            mappings.length
+        );
 
-            url: window.routes.saveMapping,
+        (async function(){
 
-            type: 'POST',
+            try {
 
-            data: {
-                _token: '{{ csrf_token() }}',
-                mappings: mappings
-            },
+                const batchSize = 20;
 
-            success: function (response) {
+                for(
+                    let i = 0;
+                    i < mappings.length;
+                    i += batchSize
+                )
+                {
+                    const batch =
+                        mappings.slice(
+                            i,
+                            i + batchSize
+                        );
 
-                alert('Mapping saved successfully.');
+                    console.log(
+                        'Saving batch:',
+                        (i / batchSize) + 1,
+                        'Rows:',
+                        batch.length
+                    );
+
+                    await saveBatch(batch);
+                }
+
+                alert(
+                    'Mapping saved successfully.'
+                );
 
                 let selectedLevel1 =
                     $('#globalLevel1').val();
@@ -898,28 +912,30 @@ $(document).ready(function () {
 
                 window.selectedLevel1AfterSave =
                     selectedLevel1;
-            },
 
-            error: function (xhr) {
+            }
+            catch(error)
+            {
+                console.error(error);
 
-                console.error(xhr);
-
-                alert('Save failed.');
-
-            },
-
-            complete: function () {
-
-                button.prop('disabled', false);
+                alert(
+                    'Save failed.'
+                );
+            }
+            finally
+            {
+                button.prop(
+                    'disabled',
+                    false
+                );
 
                 button.html(`
                     <i class="bi bi-save"></i>
                     Save Mapping
                 `);
-
             }
 
-        });
+        })();
 
     });
 

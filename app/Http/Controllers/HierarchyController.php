@@ -74,21 +74,41 @@ class HierarchyController extends Controller
 
     public function saveMapping(Request $request)
     {
+
         \Log::info([
-            'mapping_count' => count($request->mappings ?? [])
+            'mappings_count' => count($request->input('mappings', []))
         ]);
 
+         $payload = [
+            'mode' => 'update_hierarchy_mapping',
+            'mappings' => json_encode(
+                $request->input('mappings')
+            )
+        ];
+
+        \Log::info($payload);
+
+        // $response = Http::timeout(300)
+        //     ->asForm()
+        //     ->post(
+        //         env('JOGET_API_URL'),
+        //         [
+        //             'mode' => 'update_hierarchy_mapping',
+        //             'mappings' => json_encode(
+        //                 $request->mappings
+        //             )
+        //         ]
+        //     );
+        
         $response = Http::timeout(300)
-            ->asForm()
-            ->post(
-                env('JOGET_API_URL'),
-                [
-                    'mode' => 'update_hierarchy_mapping',
-                    'mappings' => json_encode(
-                        $request->mappings
-                    )
-                ]
-            );
+        //->asForm()
+         ->withHeaders([
+            'Content-Type' => 'application/json'
+        ])
+        ->post(
+            env('JOGET_API_URL'),
+            $payload
+        );
 
         return response()->json([
             'status_code' => $response->status(),
