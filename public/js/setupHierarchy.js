@@ -88,7 +88,22 @@ $(document).ready(function () {
 
         buildTable();
 
-        autoPopulateMatchedLevels();
+        const hasMatchedLevels =
+            hierarchyData.some(x =>
+                x.c_matched_level1_id ||
+                x.c_matched_level2_id ||
+                x.c_matched_level3_id ||
+                x.c_matched_level4_id
+            );
+
+        if(hasMatchedLevels)
+        {
+            autoPopulateMatchedLevels();
+        }
+        else
+        {
+            autoMatchAllRows();
+        }
 
         if(window.selectedLevel1AfterSave)
         {
@@ -174,31 +189,143 @@ $(document).ready(function () {
 
         tbody.html(html);
     }
+    function getHierarchyById(id)
+    {
+        return hierarchyMaster.find(
+            x => x.id === id
+        );
+    }
+
+    function buildHierarchyChain(id)
+    {
+        let chain = [];
+
+        let current =
+            getHierarchyById(id);
+
+        while(current)
+        {
+            chain.unshift(current);
+
+            if(
+                !current.c_parent_id ||
+                current.c_parent_id === ''
+            ){
+                break;
+            }
+
+            current =
+                getHierarchyById(
+                    current.c_parent_id
+                );
+        }
+
+        return chain;
+    }
 
     function autoPopulateMatchedLevels()
     {
         $('#mappingTable tbody tr').each(function(){
 
-            let row = $(this);
+            const row = $(this);
 
-            let level1 = row.data('level1');
-            let level2 = row.data('level2');
-            let level3 = row.data('level3');
-            let level4 = row.data('level4');
+            let level1 =
+                row.data('level1');
+
+            let level2 =
+                row.data('level2');
+
+            let level3 =
+                row.data('level3');
+
+            let level4 =
+                row.data('level4');
+
+            // deepest available match
+            const deepest =
+                level4 ||
+                level3 ||
+                level2 ||
+                level1;
+
+            if(!deepest){
+                return;
+            }
+
+            const chain =
+                buildHierarchyChain(
+                    deepest
+                );
+
+            chain.forEach(item => {
+
+                const level =
+                    parseInt(
+                        item.c_level || 0
+                    );
+
+                switch(level)
+                {
+                    case 1:
+                        level1 = item.id;
+                        break;
+
+                    case 2:
+                        level2 = item.id;
+                        break;
+
+                    case 3:
+                        level3 = item.id;
+                        break;
+
+                    case 4:
+                        level4 = item.id;
+                        break;
+                }
+            });
+
+            console.log(
+                'Resolved:',
+                level1,
+                level2,
+                level3,
+                level4
+            );
+
+           // =====================
+            // Level 1
+            // =====================
+
+            if(
+                level1 &&
+                $('#globalLevel1 option[value="' + level1 + '"]').length
+            ){
+                $('#globalLevel1').val(level1);
+            }
+
+            // =====================
+            // Level 2
+            // =====================
+
+            if(!level1 && level2)
+            {
+                const level2Node =
+                    getHierarchyById(level2);
+
+                if(level2Node)
+                {
+                    level1 = level2Node.c_parent_id;
+
+                    row.attr('data-level1', level1);
+                    row.data('level1', level1);
+                }
+            }
 
             if(!level1){
                 return;
             }
 
-            // Keep Level 1 selected
-            if($('#globalLevel1').val() != level1){
-                $('#globalLevel1').val(level1);
-            }
-
-            // ==========================
-            // LEVEL 2
-            // ==========================
-            let level2Children =
+            const level2Children =
                 getChildren(level1);
 
             populateDropdown(
@@ -206,29 +333,19 @@ $(document).ready(function () {
                 level2Children
             );
 
-            if(
-                level2 &&
-                row.find('.level2 option[value="' + level2 + '"]').length
-            ){
-                row.find('.level2').val(level2);
-
-                row.attr(
-                    'data-level2',
-                    level2
-                );
-
-                row.data(
-                    'level2',
-                    level2
-                );
-            }
-
-            // ==========================
-            // LEVEL 3
-            // ==========================
             if(level2)
             {
-                let level3Children =
+                row.find('.level2')
+                    .val(level2);
+            }
+
+            // =====================
+            // Level 3
+            // =====================
+
+            if(level2)
+            {
+                const level3Children =
                     getChildren(level2);
 
                 populateDropdown(
@@ -236,30 +353,46 @@ $(document).ready(function () {
                     level3Children
                 );
 
-                if(
-                    level3 &&
-                    row.find('.level3 option[value="' + level3 + '"]').length
-                ){
+                if(!level3)
+                {
+                    const keywords =
+                        row.data('keywords') || '';
+
+                    const bestLevel3 =
+                        findBestMatch(
+                            keywords,
+                            level3Children
+                        );
+
+                    if(bestLevel3)
+                    {
+                        level3 = bestLevel3.id;
+
+                        row.attr(
+                            'data-level3',
+                            level3
+                        );
+
+                        row.data(
+                            'level3',
+                            level3
+                        );
+                    }
+                }
+
+                if(level3)
+                {
                     row.find('.level3').val(level3);
-
-                    row.attr(
-                        'data-level3',
-                        level3
-                    );
-
-                    row.data(
-                        'level3',
-                        level3
-                    );
                 }
             }
 
-            // ==========================
-            // LEVEL 4
-            // ==========================
+            // =====================
+            // Level 4
+            // =====================
+
             if(level3)
             {
-                let level4Children =
+                const level4Children =
                     getChildren(level3);
 
                 populateDropdown(
@@ -267,24 +400,43 @@ $(document).ready(function () {
                     level4Children
                 );
 
-                if(
-                    level4 &&
-                    row.find('.level4 option[value="' + level4 + '"]').length
-                ){
+                if(!level4)
+                {
+                    const keywords =
+                        row.data('keywords') || '';
+
+                    const bestLevel4 =
+                        findBestMatch(
+                            keywords,
+                            level4Children
+                        );
+
+                    if(bestLevel4)
+                    {
+                        level4 = bestLevel4.id;
+
+                        row.attr(
+                            'data-level4',
+                            level4
+                        );
+
+                        row.data(
+                            'level4',
+                            level4
+                        );
+                    }
+                }
+
+                if(level4)
+                {
                     row.find('.level4').val(level4);
-
-                    row.attr(
-                        'data-level4',
-                        level4
-                    );
-
-                    row.data(
-                        'level4',
-                        level4
-                    );
                 }
             }
 
+            row.data('level1', level1);
+            row.data('level2', level2);
+            row.data('level3', level3);
+            row.data('level4', level4);
         });
     }
 
@@ -296,6 +448,8 @@ $(document).ready(function () {
             '<option value="">Select Level 1</option>'
         );
 
+        console.log('LEVEL1 DATA', level1Data);
+
         level1Data.forEach(item => {
 
             dropdown.append(`
@@ -305,6 +459,11 @@ $(document).ready(function () {
             `);
 
         });
+
+        console.log(
+            'LEVEL1 OPTIONS:',
+            dropdown.find('option').length
+        );
     }
 
     $('#globalLevel1').on('change', function(){
@@ -523,7 +682,7 @@ $(document).ready(function () {
 
             let score = 0;
 
-            let searchableText =
+            let searchText =
                 (
                     item.c_asset_name +
                     ',' +
@@ -532,7 +691,8 @@ $(document).ready(function () {
                 .toLowerCase();
 
             let words =
-                searchableText.split(',');
+                searchText
+                .split(',');
 
             words.forEach(word => {
 
@@ -551,52 +711,7 @@ $(document).ready(function () {
                 bestScore = score;
                 bestMatch = item;
             }
-        });
 
-        return bestMatch;
-    }
-    function findBestMatch(
-        keywords,
-        candidates
-    )
-    {
-        let bestMatch = null;
-        let bestScore = 0;
-
-        keywords =
-            (keywords || '')
-            .toLowerCase();
-
-        candidates.forEach(item => {
-
-            let score = 0;
-
-            let itemKeywords =
-                (
-                    item.c_keywords ||
-                    item.c_asset_name ||
-                    ''
-                )
-                .toLowerCase()
-                .split(',');
-
-            itemKeywords.forEach(keyword => {
-
-                keyword = keyword.trim();
-
-                if(
-                    keyword &&
-                    keywords.includes(keyword)
-                ){
-                    score++;
-                }
-            });
-
-            if(score > bestScore)
-            {
-                bestScore = score;
-                bestMatch = item;
-            }
         });
 
         return bestMatch;
@@ -1211,6 +1326,105 @@ $(document).ready(function () {
             .replace('c_', '')
             .replaceAll('_', ' ')
             .replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    function autoMatchAllRows()
+    {
+        let level1Id =
+            $('#globalLevel1').val();
+
+        if(!level1Id){
+            return;
+        }
+
+        $('#mappingTable tbody tr').each(function(){
+
+            let row = $(this);
+
+            let keywords =
+                (row.data('keywords') || '')
+                .toLowerCase();
+
+            // LEVEL 2
+            let level2Children =
+                getChildren(level1Id);
+
+            populateDropdown(
+                row.find('.level2'),
+                level2Children
+            );
+
+            let bestLevel2 =
+                findBestMatch(
+                    keywords,
+                    level2Children
+                );
+
+            if(!bestLevel2){
+                return;
+            }
+
+            row.find('.level2')
+                .val(bestLevel2.id);
+
+            row.attr(
+                'data-level2',
+                bestLevel2.id
+            );
+
+            // LEVEL 3
+            let level3Children =
+                getChildren(bestLevel2.id);
+
+            populateDropdown(
+                row.find('.level3'),
+                level3Children
+            );
+
+            let bestLevel3 =
+                findBestMatch(
+                    keywords,
+                    level3Children
+                );
+
+            if(bestLevel3)
+            {
+                row.find('.level3')
+                    .val(bestLevel3.id);
+
+                row.attr(
+                    'data-level3',
+                    bestLevel3.id
+                );
+
+                // LEVEL 4
+
+                let level4Children =
+                    getChildren(bestLevel3.id);
+
+                populateDropdown(
+                    row.find('.level4'),
+                    level4Children
+                );
+
+                let bestLevel4 =
+                    findBestMatch(
+                        keywords,
+                        level4Children
+                    );
+
+                if(bestLevel4)
+                {
+                    row.find('.level4')
+                        .val(bestLevel4.id);
+
+                    row.attr(
+                        'data-level4',
+                        bestLevel4.id
+                    );
+                }
+            }
+        });
     }
 
 });
