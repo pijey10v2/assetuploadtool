@@ -216,11 +216,18 @@ class UploadToolController extends Controller
                         ->where('project_id_number', $project->parent_project_id_number)
                         ->first();
 
+                    $cProjectId = null;
+                    if (!empty($parent->project_id)) {
+                        $cProjectId = $parent->project_id;
+                    } elseif (!empty($project->project_id)) {
+                        $cProjectId = $project->project_id;
+                    }
+
                     // Build derived mapping
                     $projectData = [
                         'c_package_id'    => $project->project_id ?? null,
                         'c_package_uuid'  => ($project->project_id_number ?? '') . '_' . ($project->project_id ?? '') . '_' . ($project->project_id_number ?? ''),
-                        'c_project_id'    => $parent->project_id ?? null,
+                        'c_project_id'    => $cProjectId,
                         'c_project_owner' => $project->project_owner ?? null,
                     ];
                 }
