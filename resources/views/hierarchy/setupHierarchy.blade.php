@@ -149,6 +149,7 @@ window.routes = {
     saveMapping: "{{ route('hierarchy.save-mapping') }}",
 };
 </script>
+<script src="{{ asset('js/elementAttributes.js') }}"></script>
 <script src="{{ asset('js/setupHierarchy.js') }}"></script>
 @endpush
 
