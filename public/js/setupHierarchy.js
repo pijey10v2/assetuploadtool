@@ -93,7 +93,9 @@ $(document).ready(function () {
                 x.c_matched_level1_id ||
                 x.c_matched_level2_id ||
                 x.c_matched_level3_id ||
-                x.c_matched_level4_id
+                x.c_matched_level4_id ||
+                x.c_matched_level5_id ||
+                x.c_matched_level6_id
             );
 
         if(hasMatchedLevels)
@@ -143,6 +145,10 @@ $(document).ready(function () {
                 data-level3="${asset.c_level3_id || asset.c_matched_level3_id || ''}"
 
                 data-level4="${asset.c_level4_id || asset.c_matched_level4_id || ''}"
+
+                data-level5="${asset.c_level5_id || asset.c_matched_level5_id || ''}"
+
+                data-level6="${asset.c_level6_id || asset.c_matched_level6_id || ''}"
             >
                 <td>${asset.c_element_id ?? ''}</td>
                 <td>${asset.c_asset_name ?? ''}</td>
@@ -173,6 +179,20 @@ $(document).ready(function () {
                     <select class="form-select level4">
                         <option value="">
                             Select Level 4
+                        </option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select level5">
+                        <option value="">
+                            Select Level 5
+                        </option>
+                    </select>
+                </td>
+                <td>
+                    <select class="form-select level6">
+                        <option value="">
+                            Select Level 6
                         </option>
                     </select>
                 </td>
@@ -241,8 +261,16 @@ $(document).ready(function () {
             let level4 =
                 row.data('level4');
 
+            let level5 =
+                row.data('level5');
+
+            let level6 =
+                row.data('level6');
+
             // deepest available match
             const deepest =
+                level6 ||
+                level5 ||
                 level4 ||
                 level3 ||
                 level2 ||
@@ -281,6 +309,14 @@ $(document).ready(function () {
                     case 4:
                         level4 = item.id;
                         break;
+
+                    case 5:
+                        level5 = item.id;
+                        break;
+
+                    case 6:
+                        level6 = item.id;
+                        break;
                 }
             });
 
@@ -289,7 +325,9 @@ $(document).ready(function () {
                 level1,
                 level2,
                 level3,
-                level4
+                level4,
+                level5,
+                level6
             );
 
            // =====================
@@ -433,10 +471,106 @@ $(document).ready(function () {
                 }
             }
 
+            // =====================
+            // Level 5
+            // =====================
+
+            if(level4)
+            {
+                const level5Children =
+                    getChildren(level4);
+
+                populateDropdown(
+                    row.find('.level5'),
+                    level5Children
+                );
+
+                if(!level5)
+                {
+                    const keywords =
+                        row.data('keywords') || '';
+
+                    const bestLevel5 =
+                        findBestMatch(
+                            keywords,
+                            level5Children
+                        );
+
+                    if(bestLevel5)
+                    {
+                        level5 = bestLevel5.id;
+
+                        row.attr(
+                            'data-level5',
+                            level5
+                        );
+
+                        row.data(
+                            'level5',
+                            level5
+                        );
+                    }
+                }
+
+                if(level5)
+                {
+                    row.find('.level5').val(level5);
+                }
+            }
+
+            // =====================
+            // Level 6
+            // =====================
+
+            if(level5)
+            {
+                const level6Children =
+                    getChildren(level5);
+
+                populateDropdown(
+                    row.find('.level6'),
+                    level6Children
+                );
+
+                if(!level6)
+                {
+                    const keywords =
+                        row.data('keywords') || '';
+
+                    const bestLevel6 =
+                    findBestMatch(
+                        keywords,
+                        level6Children
+                    );
+
+                    if(bestLevel6)
+                    {
+                        level6 = bestLevel6.id;
+
+                        row.attr(
+                            'data-level6',
+                            level6
+                        );
+
+                        row.data(
+                            'level6',
+                            level6
+                        );
+                    }
+                }
+
+                if(level6)
+                {
+                    row.find('.level6').val(level6);
+                }
+            }
+
             row.data('level1', level1);
             row.data('level2', level2);
             row.data('level3', level3);
             row.data('level4', level4);
+            row.data('level5', level5);
+            row.data('level6', level6);
         });
     }
 
@@ -492,6 +626,12 @@ $(document).ready(function () {
 
             let existingLevel4 =
                 row.attr('data-level4');
+
+            let existingLevel5 =
+                row.attr('data-level5');
+
+            let existingLevel6 =
+                row.attr('data-level6');
 
             // ALWAYS populate Level2 dropdown
             populateDropdown(
@@ -559,6 +699,54 @@ $(document).ready(function () {
                 ){
                     row.find('.level4')
                         .val(existingLevel4);
+                }
+
+                // RESTORE LEVEL5
+
+                let level5Children =
+                    getChildren(
+                        existingLevel4
+                    );
+
+                populateDropdown(
+                    row.find('.level5'),
+                    level5Children
+                );
+
+                if(
+                    existingLevel5 &&
+                    row.find(
+                        '.level5 option[value="' +
+                        existingLevel5 +
+                        '"]'
+                    ).length
+                ){
+                    row.find('.level5')
+                        .val(existingLevel5);
+                }
+
+                // RESTORE LEVEL6
+
+                let level6Children =
+                    getChildren(
+                        existingLevel5
+                    );
+
+                populateDropdown(
+                    row.find('.level6'),
+                    level6Children
+                );
+
+                if(
+                    existingLevel6 &&
+                    row.find(
+                        '.level6 option[value="' +
+                        existingLevel6 +
+                        '"]'
+                    ).length
+                ){
+                    row.find('.level6')
+                        .val(existingLevel6);
                 }
 
                 return;
@@ -654,6 +842,70 @@ $(document).ready(function () {
                             'level4',
                             bestLevel4.id
                         );
+
+                        // LEVEL 5 AUTO MATCH
+
+                        let level5Children =
+                            getChildren(bestLevel4.id);
+
+                        populateDropdown(
+                            row.find('.level5'),
+                            level5Children
+                        );
+
+                        let bestLevel5 =
+                            findBestMatch(
+                                keywords,
+                                level5Children
+                            );
+
+                        if(bestLevel5)
+                        {
+                            row.find('.level5')
+                                .val(bestLevel5.id);
+
+                            row.attr(
+                                'data-level5',
+                                bestLevel5.id
+                            );
+
+                            row.data(
+                                'level5',
+                                bestLevel5.id
+                            );
+
+                            // LEVEL 6 AUTO MATCH
+
+                            let level6Children =
+                                getChildren(bestLevel5.id);
+
+                            populateDropdown(
+                                row.find('.level6'),
+                                level6Children
+                            );
+
+                            let bestLevel6 =
+                                findBestMatch(
+                                    keywords,
+                                    level6Children
+                                );
+
+                            if(bestLevel6)
+                            {
+                                row.find('.level6')
+                                    .val(bestLevel6.id);
+
+                                row.attr(
+                                    'data-level6',
+                                    bestLevel6.id
+                                );
+
+                                row.data(
+                                    'level6',
+                                    bestLevel6.id
+                                );
+                            }
+                        }
                     }
                 }
             }
@@ -827,6 +1079,75 @@ $(document).ready(function () {
                 'level4',
                 $(this).val()
             );
+
+            let level5 =
+                row.find('.level5');
+
+            let level6 =
+                row.find('.level6');
+
+            let children =
+                getChildren($(this).val());
+
+            populateDropdown(
+                level5,
+                children
+            );
+
+            level6.html(
+                '<option value="">Select Level 6</option>'
+            );
+        }
+    );
+
+    $(document).on(
+        'change',
+        '.level5',
+        function(){
+
+            let row =
+                $(this).closest('tr');
+
+            row.attr(
+                'data-level5',
+                $(this).val()
+            );
+
+            row.data(
+                'level5',
+                $(this).val()
+            );
+
+            let level6 =
+                row.find('.level6');
+
+            let children =
+                getChildren($(this).val());
+
+            populateDropdown(
+                level6,
+                children
+            );
+        }
+    );
+
+    $(document).on(
+        'change',
+        '.level6',
+        function(){
+
+            let row =
+                $(this).closest('tr');
+
+            row.attr(
+                'data-level6',
+                $(this).val()
+            );
+
+            row.data(
+                'level6',
+                $(this).val()
+            );
         }
     );
 
@@ -905,9 +1226,24 @@ $(document).ready(function () {
                 $(this).data('level4')
                 || $(this).find('.level4').val();
 
-            if (!level2 && !level3 && !level4) {
+            const level5 =
+                $(this).data('level5')
+                || $(this).find('.level5').val();
+
+            const level6 =
+                $(this).data('level6')
+                || $(this).find('.level6').val();
+
+            if (
+                !level2 &&
+                !level3 &&
+                !level4 &&
+                !level5 &&
+                !level6
+            ){
                 return;
             }
+
             const level2Text =
                 $(this)
                 .find('.level2 option:selected')
@@ -923,6 +1259,16 @@ $(document).ready(function () {
                 .find('.level4 option:selected')
                 .text() || '';
 
+            const level5Text =
+                $(this)
+                .find('.level5 option:selected')
+                .text() || '';
+
+            const level6Text =
+                $(this)
+                .find('.level6 option:selected')
+                .text() || '';
+
             mappings.push({
                 id: $(this).data('id'),
 
@@ -936,7 +1282,13 @@ $(document).ready(function () {
                 level3_name: level3Text,
 
                 level4_id: level4,
-                level4_name: level4Text
+                level4_name: level4Text,
+
+                level5_id: level5,
+                level5_name: level5Text,
+
+                level6_id: level6,
+                level6_name: level6Text
             });
 
         });
@@ -1032,10 +1384,14 @@ $(document).ready(function () {
             'c_level2_id',
             'c_level3_id',
             'c_level4_id',
+            'c_level5_id',
+            'c_level6_id',
             'c_matched_level1_id',
             'c_matched_level2_id',
             'c_matched_level3_id',
-            'c_matched_level4_id'
+            'c_matched_level4_id',
+            'c_matched_level5_id',
+            'c_matched_level6_id'
         ];
 
         // Fields shown for all elements
@@ -1217,6 +1573,66 @@ $(document).ready(function () {
                         'data-level4',
                         bestLevel4.id
                     );
+
+                    let level5Children =
+                        getChildren(bestLevel4.id);
+
+                    populateDropdown(
+                        row.find('.level5'),
+                        level5Children
+                    );
+
+                    let bestLevel5 =
+                        findBestMatch(
+                            keywords,
+                            level5Children
+                        );
+
+                    if(bestLevel5)
+                    {
+                        row.find('.level5')
+                            .val(bestLevel5.id);
+
+                        row.attr(
+                            'data-level5',
+                            bestLevel5.id
+                        );
+
+                        row.data(
+                            'level5',
+                            bestLevel5.id
+                        );
+
+                        let level6Children =
+                            getChildren(bestLevel5.id);
+
+                        populateDropdown(
+                            row.find('.level6'),
+                            level6Children
+                        );
+
+                        let bestLevel6 =
+                            findBestMatch(
+                                keywords,
+                                level6Children
+                            );
+
+                        if(bestLevel6)
+                        {
+                            row.find('.level6')
+                                .val(bestLevel6.id);
+
+                            row.attr(
+                                'data-level6',
+                                bestLevel6.id
+                            );
+
+                            row.data(
+                                'level6',
+                                bestLevel6.id
+                            );
+                        }
+                    }
                 }
             }
         });

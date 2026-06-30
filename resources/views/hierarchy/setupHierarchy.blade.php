@@ -12,7 +12,7 @@
 }
 </style>
 
-<div class="container">
+<div class="container-fluid">
     
     <h2>Setup Hierarchy</h2>
 
@@ -28,7 +28,7 @@
         </button>
     </div>
 
-    <div class="card mt-3">
+    <div class="card mt-3 w-100">
 
         <div class="card-header">
             <h5 class="mb-0">Asset Hierarchy Mapping</h5>
@@ -75,6 +75,8 @@
                         <th width="220">Level 2</th>
                         <th width="220">Level 3</th>
                         <th width="220">Level 4</th>
+                        <th width="220">Level 5</th>
+                        <th width="220">Level 6</th>
                         <th width="120">Attributes</th>
                     </tr>
                     </thead>
