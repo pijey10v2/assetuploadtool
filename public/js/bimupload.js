@@ -247,7 +247,6 @@ $(function() {
                     </td>
                     <td><i class="bi bi-file-earmark-text text-primary me-2"></i> ${file.name}</td>
                     <td>${file.uploaded_at}</td>
-                    <td>${file.uploaded_by}</td>
                 </tr>
             `);
         });

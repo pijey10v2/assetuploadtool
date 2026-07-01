@@ -28,7 +28,7 @@
                 </th>
                 <th>File Name</th>
                 <th>Date Uploaded</th>
-                <th>Uploaded By</th>
+                <!-- <th>Uploaded By</th> -->
             </tr>
         </thead>
         <tbody id="bim-file-list">
