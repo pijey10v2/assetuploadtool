@@ -213,7 +213,7 @@ $(document).ready(function () {
             return '100+ records found.';
 
         } else {
-            return `${count}+ records found.`;
+            return `${count} records found.`;
         }
     }
 
